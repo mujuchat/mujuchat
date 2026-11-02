@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ur">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>MujuChat — Sab Dost Group Chat</title>
+    <style>
+      :root {
+        --header-green: #075e54;
+        --header-green-2: #128c7e;
+        --accent: #25d366;
+        --chat-bg: #ece5dd;
+        --bubble-own: #dcf8c6;
+        --bubble-other: #ffffff;
+        --text: #111b21;
+        --text-soft: #667781;
+        --name-color: #128c7e;
+        --bar-bg: #f0f0f0;
+        --input-bg: #ffffff;
+        --shadow: rgba(11, 20, 26, 0.13);
+        --welcome-bg: #075e54;
+        --error-bg: #fdecea;
+        --error-text: #8f1d13;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --header-green: #1f2c34;
+          --header-green-2: #1f2c34;
+          --chat-bg: #0b141a;
+          --bubble-own: #005c4b;
+          --bubble-other: #1f2c34;
+          --text: #e9edef;
+          --text-soft: #8696a0;
+          --name-color: #53bdeb;
+          --bar-bg: #1f2c34;
+          --input-bg: #2a3942;
+          --shadow: rgba(0, 0, 0, 0.4);
+          --welcome-bg: #0b141a;
+          --error-bg: #3b1d1a;
+          --error-text: #f2a49d;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: var(--text);
+        background: var(--chat-bg);
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        overflow: hidden;
+      }
+
+      /* ---------- Header ---------- */
+      header {
+        background: var(--header-green);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        padding-top: calc(10px + env(safe-area-inset-top));
+        box-shadow: 0 1px 3px var(--shadow);
+        flex: 0 0 auto;
+        z-index: 5;
+      }
+      .avatar {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        background: var(--header-green-2);
+        border: 2px solid rgba(255,255,255,.35);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 19px;
+        flex: 0 0 auto;
+        color: #fff;
+      }
+      @media (prefers-color-scheme: dark) { .avatar { background: #00a884; } }
+      .head-text { flex: 1 1 auto; min-width: 0; }
+      .head-title {
+        font-size: 17px; font-weight: 600; line-height: 1.25;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .head-sub { font-size: 12.5px; opacity: .85; line-height: 1.3; display: flex; align-items: center; gap: 6px; }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #bdbdbd; flex: 0 0 auto; }
+      .dot.on { background: var(--accent); }
+      .head-brand { font-size: 11px; letter-spacing: .04em; opacity: .75; text-transform: uppercase; }
+      .name-btn {
+        background: rgba(255,255,255,.14);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,.35);
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        flex: 0 0 auto;
+        font-family: inherit;
+      }
+      .name-btn:hover { background: rgba(255,255,255,.25); }
+      .name-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+      /* ---------- Messages ---------- */
+      main {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 14px 10px 8px;
+        background-color: var(--chat-bg);
+        background-image: radial-gradient(rgba(0,0,0,.045) 1px, transparent 1.4px);
+        background-size: 22px 22px;
+        scroll-behavior: smooth;
+      }
+      @media (prefers-color-scheme: dark) {
+        main { background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px); }
+      }
+      .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; }
+      .day-note {
+        align-self: center;
+        background: var(--bubble-other);
+        color: var(--text-soft);
+        font-size: 12px;
+        padding: 5px 12px;
+        border-radius: 8px;
+        box-shadow: 0 1px 1px var(--shadow);
+        margin: 4px 0 14px;
+        text-align: center;
+      }
+      .row { display: flex; margin: 2px 0; }
+      .row.own { justify-content: flex-end; }
+      .bubble {
+        max-width: 78%;
+        padding: 7px 10px 5px;
+        border-radius: 8px;
+        box-shadow: 0 1px 1px var(--shadow);
+        position: relative;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+      }
+      @media (min-width: 640px) { .bubble { max-width: 62%; } }
+      .row.own .bubble { background: var(--bubble-own); border-top-right-radius: 0; }
+      .row.other .bubble { background: var(--bubble-other); border-top-left-radius: 0; }
+      .sender { font-size: 13px; font-weight: 700; color: var(--name-color); margin-bottom: 2px; }
+      .msg-text { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
+      .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 2px; }
+      .msg-time { font-size: 11px; color: var(--text-soft); }
+      .ticks { font-size: 11px; color: #53bdeb; letter-spacing: -3px; margin-left: 2px; }
+      .empty {
+        text-align: center;
+        color: var(--text-soft);
+        margin: 48px auto 0;
+        max-width: 320px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .empty .big { font-size: 40px; display: block; margin-bottom: 8px; }
+      .loading { text-align: center; color: var(--text-soft); font-size: 14px; margin-top: 40px; }
+      .errbar {
+        display: none;
+        background: var(--error-bg);
+        color: var(--error-text);
+        font-size: 13.5px;
+        padding: 9px 14px;
+        text-align: center;
+        flex: 0 0 auto;
+      }
+      .errbar.show { display: block; }
+
+      /* ---------- Composer ---------- */
+      footer {
+        flex: 0 0 auto;
+        background: var(--bar-bg);
+        padding: 8px 10px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom));
+      }
+      .composer { max-width: 760px; margin: 0 auto; display: flex; align-items: flex-end; gap: 8px; }
+      .input-shell {
+        flex: 1 1 auto;
+        background: var(--input-bg);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 1px 1px var(--shadow);
+      }
+      #msgInput {
+        flex: 1 1 auto;
+        border: none;
+        background: transparent;
+        font: inherit;
+        font-size: 16px;
+        color: var(--text);
+        padding: 11px 16px;
+        resize: none;
+        max-height: 110px;
+        outline: none;
+        line-height: 1.4;
+      }
+      #msgInput::placeholder { color: var(--text-soft); }
+      .send-btn {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        border: none;
+        background: #00a884;
+        color: #fff;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+        box-shadow: 0 1px 3px var(--shadow);
+        transition: transform .08s ease, opacity .15s ease;
+      }
+      .send-btn:hover { opacity: .92; }
+      .send-btn:active { transform: scale(.94); }
+      .send-btn:disabled { opacity: .5; cursor: default; }
+      .send-btn:focus-visible { outline: 2px solid var(--header-green); outline-offset: 2px; }
+      .send-btn svg { width: 22px; height: 22px; margin-left: 2px; }
+
+      /* ---------- Welcome / name modal ---------- */
+      .overlay {
+        position: fixed; inset: 0;
+        background: var(--welcome-bg);
+        display: none;
+        align-items: center; justify-content: center;
+        z-index: 20;
+        padding: 20px;
+      }
+      .overlay.show { display: flex; }
+      .card {
+        background: var(--bubble-other);
+        border-radius: 16px;
+        padding: 30px 26px 26px;
+        width: 100%;
+        max-width: 380px;
+        text-align: center;
+        box-shadow: 0 12px 32px rgba(0,0,0,.3);
+      }
+      .card .logo {
+        width: 68px; height: 68px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        background: #00a884;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .card .logo svg { width: 36px; height: 36px; fill: #fff; }
+      .card h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; color: var(--text); }
+      .card p { margin: 0 0 20px; font-size: 14.5px; color: var(--text-soft); line-height: 1.55; }
+      .card input {
+        width: 100%;
+        font: inherit;
+        font-size: 16px;
+        padding: 12px 14px;
+        border: 2px solid #00a884;
+        border-radius: 10px;
+        outline: none;
+        background: transparent;
+        color: var(--text);
+        text-align: center;
+      }
+      .card button {
+        width: 100%;
+        margin-top: 14px;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        background: #00a884;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 13px;
+        cursor: pointer;
+      }
+      .card button:hover { opacity: .93; }
+      .card button:disabled { opacity: .5; cursor: default; }
+      .card .hint { margin-top: 14px; font-size: 12.5px; color: var(--text-soft); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="avatar" aria-hidden="true">S</div>
+      <div class="head-text">
+        <div class="head-brand">MujuChat</div>
+        <div class="head-title">Sab Dost — Group Chat</div>
+        <div class="head-sub"><span class="dot" id="statusDot"></span><span id="statusText">Connect ho raha hai…</span></div>
+      </div>
+      <button class="name-btn" id="changeNameBtn" type="button" title="Apna naam badlo">Naam badlo</button>
+    </header>
+
+    <div class="errbar" id="errBar" role="alert"></div>
+
+    <main id="chatMain">
+      <div class="wrap" id="msgWrap">
+        <div class="day-note">Ye public group chat hai — jo bhi link khole ga, wo yahan chat kar sakta hai</div>
+        <div class="loading" id="loadingNote">Messages load ho rahe hain…</div>
+        <div class="empty" id="emptyNote" hidden>
+          Abhi koi message nahi hai.<br />Pehla message tum bhej kar chat shuru karo!
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <form class="composer" id="composer">
+        <div class="input-shell">
+          <textarea id="msgInput" rows="1" placeholder="Message likho…" autocomplete="off" aria-label="Message likho"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" type="submit" aria-label="Message bhejo" title="Bhejo">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12 3.4 3.6l-.01 6.53L14 12 3.39 13.87z"/></svg>
+        </button>
+      </form>
+    </footer>
+
+    <!-- Welcome screen -->
+    <div class="overlay" id="welcomeOverlay">
+      <div class="card">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3zm-4.2 8.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm4.2 0c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm4.2 0c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/></svg>
+        </div>
+        <h1>MujuChat</h1>
+        <p>Sab Dost group chat mein khush amdeed! Chat shuru karne ke liye bas apna naam likho — koi account ya password nahi chahiye.</p>
+        <form id="nameForm">
+          <input id="nameInput" type="text" maxlength="30" placeholder="Apna naam likho" autocomplete="name" aria-label="Apna naam" />
+          <button id="nameSubmit" type="submit">Chat shuru karo</button>
+        </form>
+        <div class="hint">Naam sirf is device par save hota hai, baad mein header se badla bhi ja sakta hai.</div>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        var firebaseConfig = {
+          apiKey: "AIzaSyDzzE1dDgjsHxazLFodHTygMTocmnusxyw",
+          authDomain: "mujuchat-80885.firebaseapp.com",
+          projectId: "mujuchat-80885",
+          storageBucket: "mujuchat-80885.firebasestorage.app",
+          messagingSenderId: "758656659346",
+          appId: "1:758656659346:web:f4a25063fd1df3dbd3db4b"
+        };
+
+        var NAME_KEY = "mujuchat_name";
+        var myName = "";
+        try { myName = (localStorage.getItem(NAME_KEY) || "").trim(); } catch (e) { myName = ""; }
+
+        var overlay = document.getElementById("welcomeOverlay");
+        var nameForm = document.getElementById("nameForm");
+        var nameInput = document.getElementById("nameInput");
+        var nameSubmit = document.getElementById("nameSubmit");
+        var changeNameBtn = document.getElementById("changeNameBtn");
+        var main = document.getElementById("chatMain");
+        var wrap = document.getElementById("msgWrap");
+        var loadingNote = document.getElementById("loadingNote");
+        var emptyNote = document.getElementById("emptyNote");
+        var composer = document.getElementById("composer");
+        var input = document.getElementById("msgInput");
+        var sendBtn = document.getElementById("sendBtn");
+        var errBar = document.getElementById("errBar");
+        var statusDot = document.getElementById("statusDot");
+        var statusText = document.getElementById("statusText");
+
+        var db = null;
+        var messagesRef = null;
+        var started = false;
+
+        function showError(msg) {
+          errBar.textContent = msg;
+          errBar.classList.add("show");
+        }
+        function hideError() { errBar.classList.remove("show"); }
+
+        function setStatus(online, text) {
+          statusDot.classList.toggle("on", !!online);
+          statusText.textContent = text;
+        }
+
+        function fmtTime(ts) {
+          if (!ts) return "abhi";
+          try {
+            var d = ts.toDate ? ts.toDate() : new Date(ts);
+            var now = new Date();
+            var sameDay = d.toDateString() === now.toDateString();
+            var time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+            if (sameDay) return time;
+            var yest = new Date(now); yest.setDate(now.getDate() - 1);
+            if (d.toDateString() === yest.toDateString()) return "Kal, " + time;
+            return d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time;
+          } catch (e) { return ""; }
+        }
+
+        function nearBottom() {
+          return main.scrollHeight - main.scrollTop - main.clientHeight < 140;
+        }
+        function scrollBottom() {
+          main.scrollTop = main.scrollHeight;
+        }
+
+        function renderMessages(docs) {
+          var stick = nearBottom();
+          // Remove old message rows, keep the day-note / loading / empty nodes.
+          var old = wrap.querySelectorAll(".row");
+          for (var i = 0; i < old.length; i++) old[i].remove();
+
+          loadingNote.hidden = true;
+          emptyNote.hidden = docs.length !== 0;
+
+          docs.forEach(function (doc) {
+            var data = doc.data() || {};
+            var name = (data.name || "Mehman").toString();
+            var text = (data.text || "").toString();
+            var own = name === myName;
+
+            var row = document.createElement("div");
+            row.className = "row " + (own ? "own" : "other");
+
+            var bubble = document.createElement("div");
+            bubble.className = "bubble";
+
+            if (!own) {
+              var sender = document.createElement("div");
+              sender.className = "sender";
+              sender.textContent = name;
+              bubble.appendChild(sender);
+            }
+
+            var body = document.createElement("div");
+            body.className = "msg-text";
+            body.textContent = text;
+            bubble.appendChild(body);
+
+            var meta = document.createElement("div");
+            meta.className = "msg-meta";
+            var time = document.createElement("span");
+            time.className = "msg-time";
+            time.textContent = fmtTime(data.createdAt);
+            meta.appendChild(time);
+            if (own) {
+              var ticks = document.createElement("span");
+              ticks.className = "ticks";
+              ticks.textContent = "✓✓";
+              ticks.setAttribute("aria-hidden", "true");
+              meta.appendChild(ticks);
+            }
+            bubble.appendChild(meta);
+
+            row.appendChild(bubble);
+            wrap.appendChild(row);
+          });
+
+          if (stick || docs.length) scrollBottom();
+        }
+
+        function startChat() {
+          if (started) return;
+          started = true;
+
+          if (typeof firebase === "undefined" || !firebase.firestore) {
+            setStatus(false, "Connect nahi ho saka");
+            showError("Chat load nahi ho saki — internet check karke page dobara kholo.");
+            loadingNote.textContent = "Connection ka masla hai. Page refresh karke dobara koshish karo.";
+            return;
+          }
+
+          try {
+            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            messagesRef = db.collection("messages");
+          } catch (e) {
+            setStatus(false, "Connect nahi ho saka");
+            showError("Chat load nahi ho saki — thodi dair baad dobara koshish karo.");
+            return;
+          }
+
+          messagesRef
+            .orderBy("createdAt", "asc")
+            .limitToLast(200)
+            .onSnapshot(
+              function (snap) {
+                hideError();
+                setStatus(true, "Online — sab ke messages live aate hain");
+                renderMessages(snap.docs);
+              },
+              function (err) {
+                setStatus(false, "Connect nahi ho saka");
+                showError("Messages load nahi ho rahe — internet check karke page dobara kholo.");
+              }
+            );
+        }
+
+        function askName(prefill) {
+          overlay.classList.add("show");
+          nameInput.value = prefill || myName || "";
+          nameSubmit.disabled = !(nameInput.value.trim().length > 0);
+          setTimeout(function () { nameInput.focus(); }, 60);
+        }
+
+        nameInput.addEventListener("input", function () {
+          nameSubmit.disabled = nameInput.value.trim().length === 0;
+        });
+
+        nameForm.addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var n = nameInput.value.trim();
+          if (!n) return;
+          myName = n.slice(0, 30);
+          try { localStorage.setItem(NAME_KEY, myName); } catch (e) {}
+          overlay.classList.remove("show");
+          startChat();
+          input.focus();
+        });
+
+        changeNameBtn.addEventListener("click", function () { askName(myName); });
+
+        function autoGrow() {
+          input.style.height = "auto";
+          input.style.height = Math.min(input.scrollHeight, 110) + "px";
+        }
+        input.addEventListener("input", autoGrow);
+        input.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter" && !ev.shiftKey) {
+            ev.preventDefault();
+            composer.requestSubmit ? composer.requestSubmit() : sendMessage();
+          }
+        });
+
+        function sendMessage() {
+          var text = input.value.trim();
+          if (!text) return;
+          if (!myName) { askName(""); return; }
+          if (!messagesRef) {
+            showError("Abhi connect nahi hua — aik lamha ruko aur dobara bhejo.");
+            return;
+          }
+          input.value = "";
+          autoGrow();
+          sendBtn.disabled = true;
+
+          messagesRef
+            .add({
+              name: myName,
+              text: text.slice(0, 2000),
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(function () {
+              hideError();
+              sendBtn.disabled = false;
+              scrollBottom();
+              input.focus();
+            })
+            .catch(function () {
+              sendBtn.disabled = false;
+              showError("Message nahi gaya — internet check karke dobara bhejo.");
+              input.value = text;
+              autoGrow();
+            });
+        }
+
+        composer.addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          sendMessage();
+        });
+
+        // Boot
+        if (myName) {
+          startChat();
+        } else {
+          setStatus(false, "Pehle apna naam likho");
+          askName("");
+        }
+      })();
+    </script>
+  </body>
+</html>
