@@ -603,9 +603,17 @@
       for(var i=0;i<m.readBy.length;i++){ if(m.readBy[i]!==m.senderId) return true; }
       return false;
     }
+    function isDelivered(m, conv){
+      if(!m || !conv || !conv.deliveredMs) return false;
+      var d=toDate(m.createdAt); if(!d) return false;
+      var ms=d.getTime();
+      for(var uid in conv.deliveredMs){ if(uid!==m.senderId && conv.deliveredMs[uid]>=ms) return true; }
+      return false;
+    }
     function tickHTML(m, conv){
       if(!m || m.senderId!==me.uid) return "";
       if(isOtherRead(m, conv)) return '<span class="ticks blue">✓✓</span>';
+      if(isDelivered(m, conv)) return '<span class="ticks">✓✓</span>';
       if(m.readBy && m.readBy.length) return '<span class="ticks">✓✓</span>';
       return '<span class="ticks">✓</span>';
     }
@@ -793,9 +801,24 @@
       }, function(){ showErr("Users list load nahi ho rahi — internet check karo."); }));
       /* my conversations */
       unsubs.push(db.collection("conversations").where("members","array-contains", me.uid).limit(100).onSnapshot(function(snap){
-        snap.docs.forEach(function(d){ convsMap[d.id]=Object.assign({id:d.id}, d.data()); });
+        var openDelivChanged=false;
+        snap.docs.forEach(function(d){
+          var data=d.data();
+          var prev=(currentConv && currentConv.id===d.id) ? JSON.stringify((convsMap[d.id]||{}).deliveredMs||{}) : null;
+          convsMap[d.id]=Object.assign({id:d.id}, data);
+          if(prev!==null && JSON.stringify(data.deliveredMs||{})!==prev) openDelivChanged=true;
+          /* delivered marking: dost ka message meri app tak pohanch gaya (grey double tick ke liye) */
+          if(data.lastSenderId && data.lastSenderId!==me.uid){
+            var dAt=toDate(data.lastAt); var ms=dAt?dAt.getTime():0;
+            var mine=(data.deliveredMs && data.deliveredMs[me.uid]) || 0;
+            if(ms && ms>mine){
+              var upd={}; upd["deliveredMs."+me.uid]=ms;
+              db.collection("conversations").doc(d.id).update(upd).catch(function(){});
+            }
+          }
+        });
         renderChatList();
-        if(currentConv && convsMap[currentConv.id]){ currentConv=convsMap[currentConv.id]; updateChatHeader(); }
+        if(currentConv && convsMap[currentConv.id]){ currentConv=convsMap[currentConv.id]; updateChatHeader(); if(openDelivChanged) renderMessages(); }
       }, function(){ /* conversations query fail — list phir bhi Sab Dost dikhaye ga */ }));
       /* Sab Dost last message (legacy collection) */
       unsubs.push(db.collection("messages").orderBy("createdAt","asc").limitToLast(1).onSnapshot(function(snap){
@@ -878,7 +901,7 @@
         var av=convAvatar(c);
         items.push({ id:id, type:c.type, name:convTitle(c), photo:av.photo, lastText:c.lastText||"Chat shuru karo", lastAt:c.lastAt||c.createdAt||null,
           lastSenderId:c.lastSenderId||null, unread:(c.unread && c.unread[me.uid])||0,
-          lastMsgObj:{ senderId:c.lastSenderId, readBy:c.lastReadBy||[] }, conv:c });
+          lastMsgObj:{ senderId:c.lastSenderId, readBy:c.lastReadBy||[], createdAt:c.lastAt||null }, conv:c });
       });
       items.sort(function(a,b){
         if(a.id==="sabdost") return -1; if(b.id==="sabdost") return 1;
