@@ -104,6 +104,22 @@
       .vo-card{display:flex;flex-direction:column;gap:2px;min-width:175px;padding:2px 0;}
       .vo-card span{font-weight:600;}
       .vo-card small{color:var(--text-soft);font-size:12px;}
+      body.theme-dark{--bg:#111b21;--panel:#111b21;--panel-2:#1f2c34;--text:#e9edef;--text-soft:#8696a0;--chat-bg:#0b141a;--bubble-in:#1f2c34;--bubble-out:#005c4b;--header:#1f2c34;--divider:#222d34;--shadow:rgba(0,0,0,.45);--input-bg:#1f2c34;}
+      body.theme-light{--bg:#ffffff;--panel:#ffffff;--panel-2:#f0f2f5;--text:#111b21;--text-soft:#667781;--chat-bg:#ece5dd;--bubble-in:#ffffff;--bubble-out:#d9fdd3;--header:#008069;--divider:#e9edef;--shadow:rgba(11,20,26,.16);--input-bg:#ffffff;}
+      body.fs-sm .bubble{font-size:14px;}
+      body.fs-lg .bubble{font-size:17.5px;}
+      body.wp-1 #messagesArea{background-color:#d7e8f7;}
+      body.wp-2 #messagesArea{background-color:#fde8e9;}
+      body.wp-3 #messagesArea{background-color:#e2f2e4;}
+      body.wp-4 #messagesArea{background-color:#f7ecd2;}
+      .set-row{display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;}
+      .set-row .ic-wrap{width:42px;height:42px;border-radius:50%;background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto;}
+      .set-row .mid{flex:1;min-width:0;}
+      .set-row .nm{font-size:16px;}
+      .set-row .st{font-size:13px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .set-row .val{font-size:13.5px;color:var(--teal);flex:0 0 auto;}
+      .bc-foot{display:flex;gap:8px;padding:10px;background:var(--panel-2);align-items:flex-end;}
+      .bc-foot textarea{flex:1;border:none;border-radius:20px;padding:10px 14px;background:var(--input-bg);color:var(--text);resize:none;max-height:100px;font-size:15px;}
       .ticks.blue{color:var(--tick-blue);}
       .badge{min-width:20px;height:20px;border-radius:10px;background:var(--unread);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 6px;margin-left:auto;flex:0 0 auto;}
       .list-divider{height:1px;background:var(--divider);margin-left:77px;}
@@ -357,6 +373,7 @@
     <div class="action-bar hidden" id="actionBar">
       <button class="icon-btn" id="actionClose" type="button" aria-label="Band karo"><svg class="ic" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
       <span>Message chuna gaya</span>
+      <button class="icon-btn" id="actionStar" type="button" aria-label="Star karo"><svg class="ic" viewBox="0 0 24 24"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
       <button class="icon-btn" id="actionReply" type="button" aria-label="Reply"><svg class="ic" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg></button>
       <button class="icon-btn hidden" id="actionDelete" type="button" aria-label="Delete"><svg class="ic" viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
     </div>
@@ -418,9 +435,102 @@
 
   <!-- menu popover -->
   <div class="menu-pop hidden" id="menuPop">
-    <button type="button" id="menuProfile">Profile</button>
     <button type="button" id="menuNewGroup">Naya group</button>
+    <button type="button" id="menuBroadcast">Broadcast</button>
+    <button type="button" id="menuStarred">Starred messages</button>
+    <button type="button" id="menuReadAll">Sab parha hua mark karo</button>
+    <button type="button" id="menuProfile">Profile</button>
+    <button type="button" id="menuSettings">Settings</button>
     <button type="button" id="menuLogout">Logout</button>
+  </div>
+
+  <!-- ============ SETTINGS ============ -->
+  <div class="sub-screen hidden" id="settingsScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="settingsBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big">Settings</div></div>
+    </header>
+    <div class="sub-body">
+      <div class="set-row" id="setProfileRow">
+        <div id="setAvatar"></div>
+        <div class="mid"><div class="nm" id="setName">—</div><div class="st" id="setPhone"></div></div>
+        <span class="val">Edit</span>
+      </div>
+      <div class="section-label">Privacy</div>
+      <div class="set-row" id="setLastSeenRow">
+        <div class="ic-wrap">🕐</div>
+        <div class="mid"><div class="nm">Last seen</div><div class="st">Kon mera last seen dekh sakta hai</div></div>
+        <span class="val" id="lastSeenVal">Sab ko</span>
+      </div>
+      <div class="set-row" id="setBlockedRow">
+        <div class="ic-wrap">🚫</div>
+        <div class="mid"><div class="nm">Blocked users</div><div class="st">Block kiye hue log</div></div>
+        <span class="val" id="blockedCount">0</span>
+      </div>
+      <div class="section-label">Appearance</div>
+      <div class="set-row" id="setThemeRow">
+        <div class="ic-wrap">🌙</div>
+        <div class="mid"><div class="nm">Theme</div><div class="st">App ka rang roop</div></div>
+        <span class="val" id="themeVal">Phone ki setting</span>
+      </div>
+      <div class="set-row" id="setWpRow">
+        <div class="ic-wrap">🖼️</div>
+        <div class="mid"><div class="nm">Chat wallpaper</div><div class="st">Chat ke peeche ka rang</div></div>
+        <span class="val" id="wpVal">Default</span>
+      </div>
+      <div class="set-row" id="setFontRow">
+        <div class="ic-wrap">🔠</div>
+        <div class="mid"><div class="nm">Font size</div><div class="st">Message ke haroof ka size</div></div>
+        <span class="val" id="fontVal">Darmiyana</span>
+      </div>
+      <div class="section-label">Notifications</div>
+      <div class="set-row" id="setSoundRow">
+        <div class="ic-wrap">🔔</div>
+        <div class="mid"><div class="nm">Message sound</div><div class="st">Naya message aane par awaz (app khuli ho to)</div></div>
+        <span class="val" id="soundVal">ON</span>
+      </div>
+      <div class="section-label">Help</div>
+      <div class="set-row" id="setAboutRow">
+        <div class="ic-wrap">ℹ️</div>
+        <div class="mid"><div class="nm">About</div><div class="st">MujuChat ke baare mein</div></div>
+      </div>
+      <div class="set-row" id="setLogoutRow">
+        <div class="ic-wrap">↩️</div>
+        <div class="mid"><div class="nm" style="color:var(--danger);">Logout</div><div class="st">Is account se bahir niklo</div></div>
+      </div>
+      <div style="height:24px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ STARRED ============ -->
+  <div class="sub-screen hidden" id="starredScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="starredBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big">⭐ Starred messages</div><div class="small">Star kiye hue messages</div></div>
+    </header>
+    <div class="sub-body" id="starredBody"></div>
+  </div>
+
+  <!-- ============ BLOCKED ============ -->
+  <div class="sub-screen hidden" id="blockedScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="blockedBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big">Blocked users</div><div class="small">In ke messages tumhe nazar nahi aate</div></div>
+    </header>
+    <div class="sub-body" id="blockedBody"></div>
+  </div>
+
+  <!-- ============ BROADCAST ============ -->
+  <div class="sub-screen hidden" id="broadcastScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="bcBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big">Broadcast</div><div class="small" id="bcSub">Logon ko chuno — ek hi message sab ko jayega</div></div>
+    </header>
+    <div class="sub-body" id="bcBody"></div>
+    <div class="bc-foot">
+      <textarea id="bcInput" rows="1" placeholder="Broadcast message likho…"></textarea>
+      <button class="round-btn" id="bcSend" type="button" aria-label="Sab ko bhejo"><svg viewBox="0 0 24 24"><path d="M3.4 20.4 21.9 12 3.4 3.6l-.01 6.53L14 12 3.39 13.87z"/></svg></button>
+    </div>
   </div>
 
   <!-- group info modal -->
@@ -823,6 +933,7 @@
         var openDelivChanged=false;
         snap.docs.forEach(function(d){
           var data=d.data();
+          var prevMs=0; var pc0=convsMap[d.id]; if(pc0){ var pd0=toDate(pc0.lastAt); prevMs=pd0?pd0.getTime():0; }
           var prev=(currentConv && currentConv.id===d.id) ? JSON.stringify((convsMap[d.id]||{}).deliveredMs||{}) : null;
           convsMap[d.id]=Object.assign({id:d.id}, data);
           if(prev!==null && JSON.stringify(data.deliveredMs||{})!==prev) openDelivChanged=true;
@@ -835,6 +946,7 @@
               db.collection("conversations").doc(d.id).update(upd).catch(function(){});
             }
           }
+          if(typeof SET!=="undefined" && SET.sound && data.lastSenderId && data.lastSenderId!==me.uid && prevMs && typeof ms!=="undefined" && ms && ms>prevMs && !(currentConv && currentConv.id===d.id)) beep();
         });
         renderChatList();
         if(currentConv && convsMap[currentConv.id]){ currentConv=convsMap[currentConv.id]; updateChatHeader(); if(openDelivChanged) renderMessages(); }
@@ -1092,6 +1204,7 @@
       var ou=otherUidOf(currentConv); var u=usersMap[ou];
       if(!u) return "";
       if(u.online) return "online";
+      if(u.lastSeenPrivacy==="nobody") return "";
       return fmtLastSeen(u.lastSeen) || (u.phone||"");
     }
     function getTypingUser(){
@@ -1122,7 +1235,8 @@
       if(c.type==="private"){
         var ou=otherUidOf(c); var u=usersMap[ou]||{};
         html+='<div style="text-align:center;margin-bottom:12px;">'+avatarHTML(u.name||title, u.avatar||"", "a56")+'</div>';
-        html+='<p style="color:var(--text-soft);font-size:14px;line-height:1.6;">Phone: '+esc(u.phone||"—")+'<br/>'+(u.online?"Abhi online hai":esc(fmtLastSeen(u.lastSeen)||""))+'</p>';
+        html+='<p style="color:var(--text-soft);font-size:14px;line-height:1.6;">Phone: '+esc(u.phone||"—")+'<br/>'+(u.online?"Abhi online hai":(u.lastSeenPrivacy==="nobody"?"":esc(fmtLastSeen(u.lastSeen)||"")))+'</p>';
+        html+='<button class="link-btn" id="infoBlock" type="button" style="width:100%;margin-top:6px;color:var(--danger);">'+(isBlockedUid(ou)?"Unblock karo":"🚫 Block karo")+'</button>';
       } else if(c.type==="group"){
         html+='<div class="section-label" style="padding-left:0;">Members ('+(c.members||[]).length+')</div>';
         (c.members||[]).forEach(function(uid){
@@ -1138,6 +1252,7 @@
       var nms=card.querySelectorAll(".pick-row .nm");
       if(c.type==="group"){ (c.members||[]).forEach(function(uid, i){ var uu=usersMap[uid]||{}; if(nms[i]) nms[i].textContent= uid===me.uid ? (myProfile.name+" (Tum)") : (uu.name || (c.names && c.names[uid]) || "Dost"); }); }
       $("infoModal").classList.remove("hidden");
+      var ib=$("infoBlock"); if(ib){ ib.addEventListener("click", function(){ toggleBlock(ou); $("infoModal").classList.add("hidden"); }); }
       $("infoClose").addEventListener("click", function(){ $("infoModal").classList.add("hidden"); });
     }
     $("infoModal").addEventListener("click", function(ev){ if(ev.target===this) this.classList.add("hidden"); });
@@ -1174,7 +1289,9 @@
           q.querySelector(".qtext").textContent=m.replyTo.text||"";
           b.appendChild(q);
         }
-        if(m.viewOnce && !m.deleted){
+        if(!own && currentConv.type==="private" && m.senderId && myBlocked().indexOf(m.senderId)>=0 && !m.deleted){
+          var bx=document.createElement("span"); bx.className="deleted"; bx.textContent="🚫 Blocked user — message chhupa diya gaya"; b.appendChild(bx);
+        } else if(m.viewOnce && !m.deleted){
           var vo=document.createElement("div"); vo.className="vo-card";
           if(own){
             vo.innerHTML='<span>🔒 '+(m.type==="image"?"View Once photo":"View Once message")+'</span><small>'+(m.opened?"Khola gaya ✓":"Sirf 1 dafa ke liye")+'</small>';
@@ -1246,6 +1363,155 @@
       var upd={}; upd["unread."+me.uid]=0;
       db.collection("conversations").doc(cid).update(upd).catch(function(){});
     }
+
+    /* ---------- settings / extras (WhatsApp-style) ---------- */
+    var SET={ theme:"phone", font:"mid", wp:"0", sound:true };
+    try{ var savedSet=JSON.parse(localStorage.getItem("mj_settings")||"{}"); for(var k in savedSet) SET[k]=savedSet[k]; }catch(e){}
+    function saveSET(){ try{ localStorage.setItem("mj_settings", JSON.stringify(SET)); }catch(e){} }
+    function applySettings(){
+      document.body.classList.toggle("theme-dark", SET.theme==="dark");
+      document.body.classList.toggle("theme-light", SET.theme==="light");
+      document.body.classList.toggle("fs-sm", SET.font==="sm");
+      document.body.classList.toggle("fs-lg", SET.font==="lg");
+      ["wp-1","wp-2","wp-3","wp-4"].forEach(function(c){ document.body.classList.remove(c); });
+      if(SET.wp && SET.wp!=="0") document.body.classList.add("wp-"+SET.wp);
+      var tv=$("themeVal"); if(tv) tv.textContent = SET.theme==="dark" ? "Dark" : (SET.theme==="light" ? "Light" : "Phone ki setting");
+      var wv=$("wpVal"); if(wv) wv.textContent = ["Default","Halka neela","Halka gulabi","Halka sabz","Halka peela"][parseInt(SET.wp||"0",10)] || "Default";
+      var fv=$("fontVal"); if(fv) fv.textContent = SET.font==="sm" ? "Chhota" : (SET.font==="lg" ? "Bara" : "Darmiyana");
+      var sv=$("soundVal"); if(sv) sv.textContent = SET.sound ? "ON" : "OFF";
+    }
+    var AC=null;
+    function beep(){ try{ var Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return; AC=AC||new Ctx(); var o=AC.createOscillator(), g=AC.createGain(); o.connect(g); g.connect(AC.destination); o.frequency.value=880; g.gain.setValueAtTime(0.06, AC.currentTime); o.start(); o.stop(AC.currentTime+0.09); }catch(e){} }
+    function myUserDoc(){ return usersMap[me.uid]||{}; }
+    function myBlocked(){ return myUserDoc().blocked||[]; }
+    function isBlockedUid(uid){ return myBlocked().indexOf(uid)>=0; }
+    function toggleBlock(uid){
+      var ref=db.collection("users").doc(me.uid);
+      if(isBlockedUid(uid)){
+        if(usersMap[me.uid]) usersMap[me.uid].blocked=myBlocked().filter(function(x){ return x!==uid; });
+        ref.update({ blocked: firebase.firestore.FieldValue.arrayRemove(uid) }).then(function(){ toast("Unblock ho gaya."); }).catch(function(){});
+      } else {
+        if(usersMap[me.uid]){ var b=myBlocked().slice(); b.push(uid); usersMap[me.uid].blocked=b; }
+        ref.update({ blocked: firebase.firestore.FieldValue.arrayUnion(uid) }).then(function(){ toast("Block ho gaya — us ke messages ab nahi dikhen ge."); }).catch(function(){});
+      }
+    }
+    function openSettings(){
+      $("setAvatar").innerHTML=avatarHTML(myProfile.name||"Me", myProfile.avatar||"", "a56");
+      $("setName").textContent=myProfile.name||"";
+      $("setPhone").textContent=myProfile.phone||myProfile.email||"";
+      $("lastSeenVal").textContent=(myUserDoc().lastSeenPrivacy==="nobody") ? "Koi nahi" : "Sab ko";
+      $("blockedCount").textContent=myBlocked().length;
+      applySettings();
+      $("settingsScreen").classList.remove("hidden");
+    }
+    $("settingsBack").addEventListener("click", function(){ $("settingsScreen").classList.add("hidden"); });
+    $("setProfileRow").addEventListener("click", function(){ $("settingsScreen").classList.add("hidden"); openProfileModal(); });
+    $("setLastSeenRow").addEventListener("click", function(){
+      var now=(myUserDoc().lastSeenPrivacy==="nobody") ? "everyone" : "nobody";
+      db.collection("users").doc(me.uid).set({ lastSeenPrivacy: now }, {merge:true}).catch(function(){});
+      if(usersMap[me.uid]) usersMap[me.uid].lastSeenPrivacy=now;
+      $("lastSeenVal").textContent= now==="nobody" ? "Koi nahi" : "Sab ko";
+      toast(now==="nobody" ? "Last seen ab koi nahi dekh sakta." : "Last seen sab ko dikhe ga.");
+    });
+    $("setBlockedRow").addEventListener("click", function(){ renderBlocked(); $("blockedScreen").classList.remove("hidden"); });
+    $("blockedBack").addEventListener("click", function(){ $("blockedScreen").classList.add("hidden"); $("blockedCount").textContent=myBlocked().length; });
+    function renderBlocked(){
+      var body=$("blockedBody"); var list=myBlocked();
+      if(!list.length){ body.innerHTML='<div class="empty-note">Koi blocked nahi hai.</div>'; return; }
+      body.innerHTML="";
+      list.forEach(function(uid){
+        var u=usersMap[uid]||{};
+        var row=document.createElement("div"); row.className="pick-row";
+        row.innerHTML=avatarHTML(u.name||"Dost", u.avatar||"", "a40")+'<div class="mid"><div class="nm"></div><div class="st">Blocked</div></div>';
+        row.querySelector(".nm").textContent=u.name||"Dost";
+        var btn=document.createElement("button"); btn.className="link-btn"; btn.type="button"; btn.textContent="Unblock";
+        btn.addEventListener("click", function(){ toggleBlock(uid); setTimeout(renderBlocked, 350); });
+        row.appendChild(btn); body.appendChild(row);
+      });
+    }
+    $("setThemeRow").addEventListener("click", function(){ SET.theme = SET.theme==="phone" ? "dark" : (SET.theme==="dark" ? "light" : "phone"); saveSET(); applySettings(); });
+    $("setWpRow").addEventListener("click", function(){ SET.wp=String((parseInt(SET.wp||"0",10)+1)%5); saveSET(); applySettings(); toast("Wallpaper badal gaya — kisi chat mein ja kar dekho."); });
+    $("setFontRow").addEventListener("click", function(){ SET.font = SET.font==="mid" ? "lg" : (SET.font==="lg" ? "sm" : "mid"); saveSET(); applySettings(); });
+    $("setSoundRow").addEventListener("click", function(){ SET.sound=!SET.sound; saveSET(); applySettings(); if(SET.sound) beep(); });
+    $("setAboutRow").addEventListener("click", function(){ toast("MujuChat — WhatsApp-style private chat, tumhare apne account mein mehfooz."); });
+    $("setLogoutRow").addEventListener("click", function(){ $("settingsScreen").classList.add("hidden"); doLogout(); });
+    $("menuSettings").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); openSettings(); });
+    $("menuReadAll").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); Object.keys(convsMap).forEach(function(cid){ clearUnread(cid); }); toast("Sab chats parha hua mark ho gaye."); });
+    $("menuStarred").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); renderStarred(); $("starredScreen").classList.remove("hidden"); });
+    $("starredBack").addEventListener("click", function(){ $("starredScreen").classList.add("hidden"); });
+    function renderStarred(){
+      var body=$("starredBody"); var list=myUserDoc().starred||[];
+      if(!list.length){ body.innerHTML='<div class="empty-note">Abhi koi starred message nahi hai.<br/>Kisi message ko chun kar ⭐ dabao.</div>'; return; }
+      body.innerHTML="";
+      list.forEach(function(s){
+        var row=document.createElement("div"); row.className="pick-row";
+        row.innerHTML='<div class="mid"><div class="nm"></div><div class="st"></div></div>';
+        row.querySelector(".nm").textContent=(s.from||"Dost");
+        row.querySelector(".st").textContent=s.text||"";
+        row.addEventListener("click", function(){ $("starredScreen").classList.add("hidden"); if(s.cid==="sabdost" || convsMap[s.cid]) openChat(s.cid); else toast("Wo chat ab list mein nahi hai."); });
+        body.appendChild(row);
+      });
+    }
+    $("actionStar").addEventListener("click", function(){
+      if(!selectedMsg) return;
+      var m=selectedMsg.msg; selectedMsg=null; $("actionBar").classList.add("hidden");
+      if(m.deleted || m.viewOnce){ toast("Ye message star nahi ho sakta."); return; }
+      var list=(myUserDoc().starred||[]).slice();
+      var idx=-1; list.forEach(function(s,i){ if(s.mid===m.id && s.cid===currentConv.id) idx=i; });
+      if(idx>=0){ list.splice(idx,1); toast("Star hata diya."); }
+      else { list.unshift({ mid:m.id, cid:currentConv.id, text:previewTextFor(m).slice(0,140), from:m.senderName||"", at:Date.now() }); list=list.slice(0,100); toast("Star ho gaya ⭐"); }
+      db.collection("users").doc(me.uid).set({ starred:list }, {merge:true}).catch(function(){});
+      if(usersMap[me.uid]) usersMap[me.uid].starred=list;
+    });
+    /* ---------- broadcast ---------- */
+    var bcSelected={};
+    function ensurePrivateConv(otherUid){
+      var cid=privateConvId(me.uid, otherUid);
+      if(!convsMap[cid]){
+        var other=usersMap[otherUid]||{};
+        var doc={ type:"private", members:[me.uid, otherUid], names:{}, createdBy:me.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastText:"", unread:{} };
+        doc.names[me.uid]=myProfile.name||""; doc.names[otherUid]=other.name||"";
+        db.collection("conversations").doc(cid).set(doc, {merge:true}).catch(function(){});
+        convsMap[cid]=Object.assign({id:cid}, doc);
+      }
+      return cid;
+    }
+    function sendToConv(cid, text){
+      var doc=Object.assign(baseMsg(), { type:"text", text:text, conversationId:cid });
+      return db.collection("chatMessages").add(doc).then(function(){
+        var c=convsMap[cid]; var upd={ lastText:text.slice(0,120), lastSenderId:me.uid, lastAt: firebase.firestore.FieldValue.serverTimestamp(), lastReadBy:[] };
+        ((c && c.members)||[]).forEach(function(u){ if(u!==me.uid) upd["unread."+u]=firebase.firestore.FieldValue.increment(1); });
+        return db.collection("conversations").doc(cid).update(upd);
+      });
+    }
+    function renderBroadcast(){
+      var body=$("bcBody"); body.innerHTML=""; bcSelected={};
+      $("bcSub").textContent="Logon ko chuno — ek hi message sab ko jayega";
+      var others=Object.keys(usersMap).filter(function(uid){ return uid!==me.uid && usersMap[uid].name; });
+      if(!others.length){ body.innerHTML='<div class="empty-note">Abhi koi aur user nahi hai.</div>'; return; }
+      others.forEach(function(uid){
+        var u=usersMap[uid];
+        var row=document.createElement("div"); row.className="pick-row";
+        row.innerHTML=avatarHTML(u.name, u.avatar||"", "a40")+'<div class="mid"><div class="nm"></div><div class="st">'+(u.online?"online":"")+'</div></div><span class="check-circle"></span>';
+        row.querySelector(".nm").textContent=u.name;
+        row.addEventListener("click", function(){ bcSelected[uid]=!bcSelected[uid]; var cc=row.querySelector(".check-circle"); cc.classList.toggle("on", !!bcSelected[uid]); cc.textContent= bcSelected[uid] ? "✓" : ""; var n=Object.keys(bcSelected).filter(function(k){ return bcSelected[k]; }).length; $("bcSub").textContent= n ? (n+" log chune gaye") : "Logon ko chuno — ek hi message sab ko jayega"; });
+        body.appendChild(row);
+      });
+    }
+    $("menuBroadcast").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); renderBroadcast(); $("broadcastScreen").classList.remove("hidden"); });
+    $("bcBack").addEventListener("click", function(){ $("broadcastScreen").classList.add("hidden"); });
+    $("bcSend").addEventListener("click", function(){
+      var text=$("bcInput").value.trim();
+      var sel=Object.keys(bcSelected).filter(function(k){ return bcSelected[k]; });
+      if(!sel.length){ toast("Pehle log chuno."); return; }
+      if(!text){ toast("Message likho."); return; }
+      var btn=$("bcSend"); btn.disabled=true;
+      var chain=Promise.resolve();
+      sel.forEach(function(uid){ var cid=ensurePrivateConv(uid); chain=chain.then(function(){ return sendToConv(cid, text.slice(0,2000)); }); });
+      chain.then(function(){ btn.disabled=false; $("bcInput").value=""; $("broadcastScreen").classList.add("hidden"); toast(sel.length+" logon ko broadcast bhej diya 📣"); })
+           .catch(function(){ btn.disabled=false; toast("Broadcast mein masla aaya — internet check karo."); });
+    });
+    applySettings();
 
     /* ---------- sending ---------- */
     /* ---------- view once ---------- */
