@@ -99,6 +99,11 @@
       .chat-row .preview{display:flex;align-items:center;gap:3px;color:var(--text-soft);font-size:13.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .chat-row .preview .pv{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
       .ticks{font-size:12px;letter-spacing:-4px;margin-right:3px;color:#8696a0;flex:0 0 auto;}
+      .vo-toggle span{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:2px solid currentColor;border-radius:50%;font-size:13px;font-weight:800;}
+      .vo-toggle.on{color:#00a884 !important;}
+      .vo-card{display:flex;flex-direction:column;gap:2px;min-width:175px;padding:2px 0;}
+      .vo-card span{font-weight:600;}
+      .vo-card small{color:var(--text-soft);font-size:12px;}
       .ticks.blue{color:var(--tick-blue);}
       .badge{min-width:20px;height:20px;border-radius:10px;background:var(--unread);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 6px;margin-left:auto;flex:0 0 auto;}
       .list-divider{height:1px;background:var(--divider);margin-left:77px;}
@@ -368,6 +373,7 @@
           <textarea id="msgInput" rows="1" placeholder="Message" aria-label="Message likho"></textarea>
           <button class="icon-btn" id="attachBtn" type="button" aria-label="Photo bhejo"><svg class="ic" viewBox="0 0 24 24"><path d="M16.5 3H9.66a5.5 5.5 0 0 0-5.5 5.5v7A5.5 5.5 0 0 0 9.66 21h7a5.5 5.5 0 0 0 5.5-5.5V8.83a5.84 5.84 0 0 0-5.66-5.83zm3.66 12.5a3.5 3.5 0 0 1-3.5 3.5h-7a3.5 3.5 0 0 1-3.5-3.5v-7a3.5 3.5 0 0 1 3.5-3.5H16.5a3.84 3.84 0 0 1 3.66 3.83v6.67z" transform="rotate(45 12 12) scale(0.92) translate(1 1)"/></svg></button>
           <button class="icon-btn" id="cameraBtn" type="button" aria-label="Camera"><svg class="ic" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
+          <button class="icon-btn vo-toggle" id="voBtn" type="button" aria-label="View Once — message sirf ek dafa khule ga"><span>1</span></button>
         </div>
         <div class="rec-bar hidden" id="recBar">
           <span class="rec-dot"></span><span class="rt" id="recTime">0:00</span><span class="rlabel">Record ho raha hai… bhejne ke liye ✓ dabao</span>
@@ -426,10 +432,22 @@
       <h3>Photo bhejo</h3>
       <img class="photo-preview-img" id="photoPreview" alt="Bhejne wali photo" />
       <input type="text" id="photoCaption" placeholder="Caption likho…" maxlength="300" />
+      <button class="link-btn" id="voPhotoBtn" type="button" style="width:100%;margin-top:10px;">⚪ View Once: OFF</button>
       <div style="display:flex;gap:10px;margin-top:14px;">
         <button class="link-btn" id="photoCancel" type="button" style="flex:1;">Cancel</button>
         <button class="btn-green" id="photoSend" type="button" style="flex:1;margin-top:0;">Bhejo</button>
       </div>
+    </div>
+  </div>
+
+  <!-- view once viewer -->
+  <div class="modal-veil hidden" id="voViewer">
+    <div class="modal-card" style="text-align:center;">
+      <h3>🔒 View Once</h3>
+      <img id="voImg" alt="View Once photo" style="max-width:100%;border-radius:12px;" />
+      <p id="voText" style="font-size:17px;white-space:pre-wrap;text-align:left;"></p>
+      <p style="color:var(--text-soft);font-size:13px;">Ye sirf ek dafa ke liye hai — band karne ke baad dobara nahi khule ga.</p>
+      <button class="btn-green" id="voClose" type="button">Band karo</button>
     </div>
   </div>
 
@@ -591,6 +609,7 @@
     function blobToDataURL(blob){ return new Promise(function(resolve, reject){ var r=new FileReader(); r.onload=function(){ resolve(r.result); }; r.onerror=reject; r.readAsDataURL(blob); }); }
     function previewTextFor(m){
       if(!m) return "";
+      if(m.viewOnce) return m.type==="image" ? "🔒 View Once photo" : "🔒 View Once message";
       if(m.deleted) return "🚫 Message delete ho gaya";
       if(m.type==="image") return "📷 Photo" + (m.text ? " — " + m.text : "");
       if(m.type==="audio") return "🎤 Voice message";
@@ -1011,6 +1030,7 @@
     function openChat(cid){
       closeChatListeners();
       selectedMsg=null; replyTo=null; updateReplyBar(); $("actionBar").classList.add("hidden");
+      setVO(false); var vb=$("voBtn"); if(vb) vb.style.display = (cid==="sabdost") ? "none" : "";
       if(cid==="sabdost"){
         currentConv={ id:"sabdost", type:"everyone", name:"Sab Dost", members:[] };
       } else {
@@ -1048,7 +1068,8 @@
       d=d||{};
       return { id:id, senderId:d.uid||d.senderId||null, senderName:d.name||d.senderName||"Mehman",
         text:d.text||"", type:d.type||"text", imageData:d.imageData||"", audioData:d.audioData||"", audioType:d.audioType||"",
-        replyTo:d.replyTo||null, readBy:d.readBy||[], deleted:!!d.deleted, createdAt:d.createdAt||null };
+        replyTo:d.replyTo||null, readBy:d.readBy||[], deleted:!!d.deleted, createdAt:d.createdAt||null,
+        viewOnce:!!d.viewOnce, opened:!!d.opened };
     }
     function closeChat(){
       closeChatListeners();
@@ -1153,7 +1174,18 @@
           q.querySelector(".qtext").textContent=m.replyTo.text||"";
           b.appendChild(q);
         }
-        if(m.deleted){
+        if(m.viewOnce && !m.deleted){
+          var vo=document.createElement("div"); vo.className="vo-card";
+          if(own){
+            vo.innerHTML='<span>🔒 '+(m.type==="image"?"View Once photo":"View Once message")+'</span><small>'+(m.opened?"Khola gaya ✓":"Sirf 1 dafa ke liye")+'</small>';
+          } else if(m.opened){
+            vo.innerHTML='<span>🚫 View Once</span><small>Dekha ja chuka hai</small>';
+          } else {
+            vo.innerHTML='<span>🔒 '+(m.type==="image"?"View Once photo":"View Once message")+'</span><small>Dekhne ke liye tap karo</small>';
+            (function(mm){ vo.addEventListener("click", function(ev){ ev.stopPropagation(); openViewOnce(mm); }); })(m);
+          }
+          b.appendChild(vo);
+        } else if(m.deleted){
           var del=document.createElement("span"); del.className="deleted"; del.textContent="🚫 Ye message delete ho gaya"; b.appendChild(del);
         } else if(m.type==="image" && m.imageData){
           var im=document.createElement("img"); im.className="photo"; im.src=m.imageData; im.alt="Photo message"; b.appendChild(im);
@@ -1216,6 +1248,22 @@
     }
 
     /* ---------- sending ---------- */
+    /* ---------- view once ---------- */
+    var viewOnceNext=false;
+    function setVO(on){
+      viewOnceNext=!!on;
+      var b1=$("voBtn"); if(b1) b1.classList.toggle("on", viewOnceNext);
+      var b2=$("voPhotoBtn"); if(b2) b2.textContent= viewOnceNext ? "🔘 View Once: ON — sirf 1 dafa khule gi" : "⚪ View Once: OFF";
+    }
+    function openViewOnce(m){
+      if(!m || m.opened || !currentConv) return;
+      if(m.type==="image"){ $("voImg").src=m.imageData||""; $("voImg").classList.remove("hidden"); $("voText").classList.add("hidden"); }
+      else { $("voText").textContent=m.text||""; $("voText").classList.remove("hidden"); $("voImg").classList.add("hidden"); }
+      $("voViewer").classList.remove("hidden");
+      var upd={ opened:true, text:"" };
+      if(m.type==="image") upd.imageData=firebase.firestore.FieldValue.delete();
+      db.collection("chatMessages").doc(m.id).update(upd).catch(function(){});
+    }
     function baseMsg(){
       return { senderId:me.uid, senderName:myProfile.name||"", uid:me.uid, name:myProfile.name||"",
         readBy:[], createdAt: firebase.firestore.FieldValue.serverTimestamp() };
@@ -1270,7 +1318,8 @@
       var text=$("msgInput").value.trim();
       if(!text){ startRecording(); return; }
       $("msgInput").value=""; autoGrow(); setTyping(false);
-      sendPayload({ type:"text", text:text.slice(0,2000) }, text).catch(function(){ toast("Message nahi gaya — internet check karo."); });
+      var voT=viewOnceNext; setVO(false);
+      sendPayload({ type:"text", text:text.slice(0,2000), viewOnce:voT }, voT ? "🔒 View Once message" : text).catch(function(){ toast("Message nahi gaya — internet check karo."); });
     });
 
     /* ---------- emoji ---------- */
@@ -1295,16 +1344,20 @@
       }).catch(function(){ toast("Photo bohat bari hai — chhoti photo chuno."); });
     }
     $("attachBtn").addEventListener("click", function(){ photoTarget="chat"; $("photoInput").click(); });
+    $("voBtn").addEventListener("click", function(){ setVO(!viewOnceNext); if(viewOnceNext) toast("View Once ON — agla message/photo sirf 1 dafa khule ga."); });
+    $("voPhotoBtn").addEventListener("click", function(){ setVO(!viewOnceNext); });
+    $("voClose").addEventListener("click", function(){ $("voViewer").classList.add("hidden"); $("voImg").src=""; });
     $("cameraBtn").addEventListener("click", function(){ photoTarget="chat"; $("cameraInput").click(); });
     $("photoInput").addEventListener("change", function(){ handlePhotoFile(this.files && this.files[0], "chat"); this.value=""; });
     $("cameraInput").addEventListener("change", function(){ handlePhotoFile(this.files && this.files[0], "chat"); this.value=""; });
-    $("photoCancel").addEventListener("click", function(){ $("photoModal").classList.add("hidden"); pendingPhotoData=""; });
+    $("photoCancel").addEventListener("click", function(){ $("photoModal").classList.add("hidden"); pendingPhotoData=""; setVO(false); });
     $("photoSend").addEventListener("click", function(){
       if(!pendingPhotoData) return;
       var cap=$("photoCaption").value.trim();
       var data=pendingPhotoData; pendingPhotoData="";
       $("photoModal").classList.add("hidden");
-      sendPayload({ type:"image", imageData:data, text:cap.slice(0,300) }, "📷 Photo"+(cap?" — "+cap:"")).catch(function(){ toast("Photo nahi gayi — internet check karo."); });
+      var voP=viewOnceNext; setVO(false);
+      sendPayload({ type:"image", imageData:data, text:cap.slice(0,300), viewOnce:voP }, voP ? "🔒 View Once photo" : ("📷 Photo"+(cap?" — "+cap:""))).catch(function(){ toast("Photo nahi gayi — internet check karo."); });
     });
 
     /* ---------- voice messages ---------- */
