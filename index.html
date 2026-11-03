@@ -692,6 +692,17 @@
       $("mainApp").classList.toggle("hidden", !!id);
       if(id){ $("chatScreen").classList.add("hidden"); }
     }
+    /* ---------- Android app bridge (band app par notification ke liye) ---------- */
+    function bridgeSync(){
+      try{
+        if(window.MujuBridge && me && me.refreshToken){
+          MujuBridge.setUser(me.uid, me.refreshToken, (myProfile && myProfile.name) || "");
+        }
+      }catch(e){}
+    }
+    function bridgeClear(){
+      try{ if(window.MujuBridge) MujuBridge.clearUser(); }catch(e){}
+    }
     function setPresence(online){
       if(!db || !me) return;
       var upd={ online:!!online, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
@@ -699,7 +710,7 @@
     }
     function startHeartbeat(){
       if(heartbeat) clearInterval(heartbeat);
-      heartbeat=setInterval(function(){ if(!document.hidden) setPresence(true); }, 45000);
+      heartbeat=setInterval(function(){ if(!document.hidden){ setPresence(true); bridgeSync(); } }, 45000);
       window.addEventListener("beforeunload", function(){ setPresence(false); });
       document.addEventListener("visibilitychange", function(){ setPresence(!document.hidden); });
     }
@@ -711,6 +722,7 @@
         if(data && data.name){
           myProfile=data;
           try{ localStorage.setItem("mujuchat_name", data.name); }catch(e){}
+          bridgeSync();
           enterApp();
         } else {
           myProfile=data||{};
@@ -745,10 +757,12 @@
         btn.disabled=false; btn.textContent="Chat shuru karo";
         myProfile=Object.assign({}, myProfile, doc);
         try{ localStorage.setItem("mujuchat_name", doc.name); }catch(e){}
+        bridgeSync();
         enterApp();
       }).catch(function(){ btn.disabled=false; btn.textContent="Chat shuru karo"; formErr("profileError","Profile save nahi hui — internet check karke dobara koshish karo."); });
     });
     function doLogout(){
+      bridgeClear();
       setPresence(false);
       if(heartbeat) clearInterval(heartbeat);
       stopAllListeners();
