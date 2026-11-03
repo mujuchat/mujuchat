@@ -5,569 +5,1626 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="data:," />
-    <title>MujuChat — Sab Dost Group Chat</title>
+    <title>MujuChat</title>
     <style>
-      :root {
-        --header-green: #075e54;
-        --header-green-2: #128c7e;
-        --accent: #25d366;
-        --chat-bg: #ece5dd;
-        --bubble-own: #dcf8c6;
-        --bubble-other: #ffffff;
-        --text: #111b21;
-        --text-soft: #667781;
-        --name-color: #128c7e;
-        --bar-bg: #f0f0f0;
-        --input-bg: #ffffff;
-        --shadow: rgba(11, 20, 26, 0.13);
-        --welcome-bg: #075e54;
-        --error-bg: #fdecea;
-        --error-text: #8f1d13;
+      :root{
+        --teal:#008069; --teal-dark:#017c6b; --green:#00a884; --green-bright:#25d366;
+        --bg:#ffffff; --panel:#ffffff; --panel-2:#f0f2f5; --text:#111b21; --text-soft:#667781;
+        --chat-bg:#ece5dd; --bubble-in:#ffffff; --bubble-out:#d9fdd3; --header:#008069;
+        --divider:#e9edef; --shadow:rgba(11,20,26,.16); --unread:#25d366; --tick-blue:#53bdeb;
+        --danger:#ea0038; --input-bg:#ffffff;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --header-green: #1f2c34;
-          --header-green-2: #1f2c34;
-          --chat-bg: #0b141a;
-          --bubble-own: #005c4b;
-          --bubble-other: #1f2c34;
-          --text: #e9edef;
-          --text-soft: #8696a0;
-          --name-color: #53bdeb;
-          --bar-bg: #1f2c34;
-          --input-bg: #2a3942;
-          --shadow: rgba(0, 0, 0, 0.4);
-          --welcome-bg: #0b141a;
-          --error-bg: #3b1d1a;
-          --error-text: #f2a49d;
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#111b21; --panel:#111b21; --panel-2:#1f2c34; --text:#e9edef; --text-soft:#8696a0;
+          --chat-bg:#0b141a; --bubble-in:#1f2c34; --bubble-out:#005c4b; --header:#1f2c34;
+          --divider:#222d34; --shadow:rgba(0,0,0,.45); --input-bg:#1f2c34;
         }
       }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
-        color: var(--text);
-        background: var(--chat-bg);
-        display: flex;
-        flex-direction: column;
-        height: 100dvh;
-        overflow: hidden;
-      }
+      *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+      html,body{height:100%;}
+      body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--text);background:var(--bg);height:100dvh;overflow:hidden;}
+      .hidden{display:none !important;}
+      button{font-family:inherit;cursor:pointer;}
+      input,select,textarea{font-family:inherit;}
+      svg{display:block;}
+      .ic{width:24px;height:24px;fill:currentColor;flex:0 0 auto;}
+      .ic.sm{width:20px;height:20px;}
+      .icon-btn{background:none;border:none;color:inherit;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+      .icon-btn:active{background:rgba(127,127,127,.18);}
 
-      /* ---------- Header ---------- */
-      header {
-        background: var(--header-green);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 14px;
-        padding-top: calc(10px + env(safe-area-inset-top));
-        box-shadow: 0 1px 3px var(--shadow);
-        flex: 0 0 auto;
-        z-index: 5;
+      /* ---------- generic screens ---------- */
+      .screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;z-index:40;overflow-y:auto;}
+      .welcome-wrap{max-width:430px;width:100%;margin:0 auto;padding:34px 26px 26px;display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;}
+      .logo-circle{width:86px;height:86px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;margin:18px 0 16px;}
+      .logo-circle svg{width:48px;height:48px;fill:#fff;}
+      .welcome-wrap h1{font-size:26px;margin:0 0 8px;font-weight:600;}
+      .welcome-wrap p{color:var(--text-soft);font-size:14.5px;line-height:1.55;margin:0 0 22px;}
+      .field{width:100%;text-align:left;margin-bottom:14px;}
+      .field label{display:block;font-size:12.5px;color:var(--teal);font-weight:600;margin-bottom:5px;letter-spacing:.02em;}
+      @media (prefers-color-scheme: dark){.field label{color:var(--green-bright);}}
+      .field select,.field input[type=tel],.field input[type=text]{
+        width:100%;border:none;border-bottom:2px solid var(--teal);background:transparent;color:var(--text);
+        font-size:16.5px;padding:8px 2px;outline:none;border-radius:0;
       }
-      .avatar {
-        width: 42px; height: 42px;
-        border-radius: 50%;
-        background: var(--header-green-2);
-        border: 2px solid rgba(255,255,255,.35);
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 19px;
-        flex: 0 0 auto;
-        color: #fff;
+      .phone-row{display:flex;gap:12px;width:100%;}
+      .phone-code{flex:0 0 86px;}
+      .phone-num{flex:1 1 auto;}
+      .btn-green{
+        background:var(--green);color:#fff;border:none;border-radius:24px;padding:12px 34px;font-size:15.5px;
+        font-weight:600;box-shadow:0 1px 3px var(--shadow);margin-top:14px;min-width:150px;
       }
-      @media (prefers-color-scheme: dark) { .avatar { background: #00a884; } }
-      .head-text { flex: 1 1 auto; min-width: 0; }
-      .head-title {
-        font-size: 17px; font-weight: 600; line-height: 1.25;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      .head-sub { font-size: 12.5px; opacity: .85; line-height: 1.3; display: flex; align-items: center; gap: 6px; }
-      .dot { width: 8px; height: 8px; border-radius: 50%; background: #bdbdbd; flex: 0 0 auto; }
-      .dot.on { background: var(--accent); }
-      .head-brand { font-size: 11px; letter-spacing: .04em; opacity: .75; text-transform: uppercase; }
-      .name-btn {
-        background: rgba(255,255,255,.14);
-        color: #fff;
-        border: 1px solid rgba(255,255,255,.35);
-        border-radius: 999px;
-        padding: 7px 12px;
-        font-size: 13px;
-        cursor: pointer;
-        flex: 0 0 auto;
-        font-family: inherit;
-      }
-      .name-btn:hover { background: rgba(255,255,255,.25); }
-      .name-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      .btn-green:disabled{opacity:.45;cursor:default;}
+      .btn-green:active{transform:scale(.98);}
+      .link-btn{background:none;border:none;color:var(--teal);font-size:14.5px;font-weight:600;padding:8px;}
+      @media (prefers-color-scheme: dark){.link-btn{color:var(--green-bright);}}
+      .otp-input{letter-spacing:10px;text-align:center;font-size:24px !important;font-weight:600;}
+      .form-error{display:none;width:100%;background:#fdecea;color:#8f1d13;border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-top:14px;text-align:left;}
+      .form-error.show{display:block;}
+      @media (prefers-color-scheme: dark){.form-error{background:#3b1d1a;color:#f2a49d;}}
+      .hint-sm{font-size:12.5px;color:var(--text-soft);margin-top:16px;line-height:1.55;}
+      .profile-photo-pick{position:relative;width:110px;height:110px;margin:6px auto 18px;}
+      .profile-photo-pick .avatar-lg{width:110px;height:110px;font-size:42px;}
+      .photo-cam{position:absolute;right:0;bottom:0;width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px var(--shadow);}
+      .photo-cam svg{width:19px;height:19px;fill:#fff;}
 
-      /* ---------- Messages ---------- */
-      main {
-        flex: 1 1 auto;
-        overflow-y: auto;
-        padding: 14px 10px 8px;
-        background-color: var(--chat-bg);
-        background-image: radial-gradient(rgba(0,0,0,.045) 1px, transparent 1.4px);
-        background-size: 22px 22px;
-        scroll-behavior: smooth;
-      }
-      @media (prefers-color-scheme: dark) {
-        main { background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1.4px); }
-      }
-      .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; }
-      .day-note {
-        align-self: center;
-        background: var(--bubble-other);
-        color: var(--text-soft);
-        font-size: 12px;
-        padding: 5px 12px;
-        border-radius: 8px;
-        box-shadow: 0 1px 1px var(--shadow);
-        margin: 4px 0 14px;
-        text-align: center;
-      }
-      .row { display: flex; margin: 2px 0; }
-      .row.own { justify-content: flex-end; }
-      .bubble {
-        max-width: 78%;
-        padding: 7px 10px 5px;
-        border-radius: 8px;
-        box-shadow: 0 1px 1px var(--shadow);
-        position: relative;
-        word-wrap: break-word;
-        overflow-wrap: anywhere;
-      }
-      @media (min-width: 640px) { .bubble { max-width: 62%; } }
-      .row.own .bubble { background: var(--bubble-own); border-top-right-radius: 0; }
-      .row.other .bubble { background: var(--bubble-other); border-top-left-radius: 0; }
-      .sender { font-size: 13px; font-weight: 700; color: var(--name-color); margin-bottom: 2px; }
-      .msg-text { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
-      .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 3px; margin-top: 2px; }
-      .msg-time { font-size: 11px; color: var(--text-soft); }
-      .ticks { font-size: 11px; color: #53bdeb; letter-spacing: -3px; margin-left: 2px; }
-      .empty {
-        text-align: center;
-        color: var(--text-soft);
-        margin: 48px auto 0;
-        max-width: 320px;
-        font-size: 15px;
-        line-height: 1.6;
-      }
-      .empty .big { font-size: 40px; display: block; margin-bottom: 8px; }
-      .loading { text-align: center; color: var(--text-soft); font-size: 14px; margin-top: 40px; }
-      .errbar {
-        display: none;
-        background: var(--error-bg);
-        color: var(--error-text);
-        font-size: 13.5px;
-        padding: 9px 14px;
-        text-align: center;
-        flex: 0 0 auto;
-      }
-      .errbar.show { display: block; }
+      /* ---------- avatars ---------- */
+      .avatar{border-radius:50%;background:#6a7175;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;overflow:hidden;flex:0 0 auto;text-transform:uppercase;}
+      .avatar img{width:100%;height:100%;object-fit:cover;}
+      .avatar.a49{width:49px;height:49px;font-size:19px;}
+      .avatar.a40{width:40px;height:40px;font-size:15px;}
+      .avatar.a56{width:56px;height:56px;font-size:22px;}
+      .avatar-lg{border-radius:50%;background:#6a7175;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;overflow:hidden;text-transform:uppercase;}
+      .avatar-lg img{width:100%;height:100%;object-fit:cover;}
+      .ring-wrap{position:relative;border-radius:50%;padding:2.5px;border:2.5px solid var(--green-bright);flex:0 0 auto;}
+      .ring-wrap .avatar{border:2px solid var(--bg);}
 
-      /* ---------- Composer ---------- */
-      footer {
-        flex: 0 0 auto;
-        background: var(--bar-bg);
-        padding: 8px 10px;
-        padding-bottom: calc(8px + env(safe-area-inset-bottom));
-      }
-      .composer { max-width: 760px; margin: 0 auto; display: flex; align-items: flex-end; gap: 8px; }
-      .input-shell {
-        flex: 1 1 auto;
-        background: var(--input-bg);
-        border-radius: 24px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 1px 1px var(--shadow);
-      }
-      #msgInput {
-        flex: 1 1 auto;
-        border: none;
-        background: transparent;
-        font: inherit;
-        font-size: 16px;
-        color: var(--text);
-        padding: 11px 16px;
-        resize: none;
-        max-height: 110px;
-        outline: none;
-        line-height: 1.4;
-      }
-      #msgInput::placeholder { color: var(--text-soft); }
-      .send-btn {
-        width: 46px; height: 46px;
-        border-radius: 50%;
-        border: none;
-        background: #00a884;
-        color: #fff;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        flex: 0 0 auto;
-        box-shadow: 0 1px 3px var(--shadow);
-        transition: transform .08s ease, opacity .15s ease;
-      }
-      .send-btn:hover { opacity: .92; }
-      .send-btn:active { transform: scale(.94); }
-      .send-btn:disabled { opacity: .5; cursor: default; }
-      .send-btn:focus-visible { outline: 2px solid var(--header-green); outline-offset: 2px; }
-      .send-btn svg { width: 22px; height: 22px; margin-left: 2px; }
+      /* ---------- main app ---------- */
+      #mainApp{display:flex;flex-direction:column;height:100dvh;}
+      .app-header{background:var(--header);color:#fff;display:flex;align-items:center;gap:4px;padding:8px 8px 8px 16px;padding-top:calc(8px + env(safe-area-inset-top));flex:0 0 auto;z-index:6;}
+      .app-header .app-name{font-size:20px;font-weight:600;flex:1 1 auto;letter-spacing:.01em;}
+      .search-bar{background:var(--header);padding:0 12px 10px;display:flex;flex:0 0 auto;}
+      .search-bar .shell{flex:1;background:var(--panel);border-radius:22px;display:flex;align-items:center;padding:0 14px;gap:8px;color:var(--text-soft);}
+      .search-bar input{flex:1;border:none;outline:none;background:transparent;color:var(--text);font-size:15.5px;padding:10px 0;}
+      .view{flex:1 1 auto;overflow-y:auto;background:var(--panel);position:relative;}
+      .chat-row{display:flex;align-items:center;gap:13px;padding:11px 15px;cursor:pointer;background:var(--panel);}
+      .chat-row:active{background:var(--panel-2);}
+      .chat-row .mid{flex:1 1 auto;min-width:0;}
+      .chat-row .top-line{display:flex;align-items:baseline;gap:8px;}
+      .chat-row .nm{font-size:16.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;}
+      .chat-row .tm{font-size:12px;color:var(--text-soft);flex:0 0 auto;}
+      .chat-row .tm.unread{color:var(--unread);font-weight:600;}
+      .chat-row .preview{display:flex;align-items:center;gap:3px;color:var(--text-soft);font-size:13.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .chat-row .preview .pv{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .ticks{font-size:12px;letter-spacing:-4px;margin-right:3px;color:#8696a0;flex:0 0 auto;}
+      .ticks.blue{color:var(--tick-blue);}
+      .badge{min-width:20px;height:20px;border-radius:10px;background:var(--unread);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 6px;margin-left:auto;flex:0 0 auto;}
+      .list-divider{height:1px;background:var(--divider);margin-left:77px;}
+      .empty-note{text-align:center;color:var(--text-soft);padding:56px 34px;font-size:14.5px;line-height:1.65;}
+      .empty-note .big-ic{font-size:40px;display:block;margin-bottom:10px;}
+      .fab{position:fixed;right:18px;bottom:86px;width:56px;height:56px;border-radius:16px;background:var(--green);color:#fff;border:none;box-shadow:0 4px 12px var(--shadow);display:flex;align-items:center;justify-content:center;z-index:8;}
+      .fab svg{width:26px;height:26px;fill:#fff;}
+      .fab:active{transform:scale(.96);}
+      .bottom-nav{flex:0 0 auto;display:flex;background:var(--panel);border-top:1px solid var(--divider);padding-bottom:env(safe-area-inset-bottom);z-index:6;}
+      .bottom-nav button{flex:1;background:none;border:none;color:var(--text-soft);padding:7px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:500;position:relative;}
+      .bottom-nav button .pill{display:flex;align-items:center;justify-content:center;width:56px;height:30px;border-radius:15px;}
+      .bottom-nav button.active{color:var(--text);}
+      .bottom-nav button.active .pill{background:#d3f8df;}
+      @media (prefers-color-scheme: dark){.bottom-nav button.active .pill{background:#0f3d31;}}
+      .bottom-nav button.active{color:var(--green);}
+      .nav-badge{position:absolute;top:2px;right:calc(50% - 26px);background:var(--unread);color:#fff;font-size:10.5px;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+      .section-label{font-size:13.5px;color:var(--teal);font-weight:600;padding:16px 15px 6px;}
+      @media (prefers-color-scheme: dark){.section-label{color:var(--green-bright);}}
+      .status-row{display:flex;align-items:center;gap:13px;padding:10px 15px;cursor:pointer;}
+      .status-row:active{background:var(--panel-2);}
+      .status-row .nm{font-size:16px;font-weight:500;}
+      .status-row .tm{font-size:13px;color:var(--text-soft);margin-top:1px;}
+      .plus-badge{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;border:2px solid var(--panel);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;line-height:1;}
+      .call-ic{color:var(--green);flex:0 0 auto;}
+      .call-ic.missed{color:var(--danger);}
+      .call-dir{font-size:12px;vertical-align:-2px;}
 
-      /* ---------- Welcome / name modal ---------- */
-      .overlay {
-        position: fixed; inset: 0;
-        background: var(--welcome-bg);
-        display: none;
-        align-items: center; justify-content: center;
-        z-index: 20;
-        padding: 20px;
-      }
-      .overlay.show { display: flex; }
-      .card {
-        background: var(--bubble-other);
-        border-radius: 16px;
-        padding: 30px 26px 26px;
-        width: 100%;
-        max-width: 380px;
-        text-align: center;
-        box-shadow: 0 12px 32px rgba(0,0,0,.3);
-      }
-      .card .logo {
-        width: 68px; height: 68px;
-        margin: 0 auto 14px;
-        border-radius: 50%;
-        background: #00a884;
-        display: flex; align-items: center; justify-content: center;
-      }
-      .card .logo svg { width: 36px; height: 36px; fill: #fff; }
-      .card h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; color: var(--text); }
-      .card p { margin: 0 0 20px; font-size: 14.5px; color: var(--text-soft); line-height: 1.55; }
-      .card input {
-        width: 100%;
-        font: inherit;
-        font-size: 16px;
-        padding: 12px 14px;
-        border: 2px solid #00a884;
-        border-radius: 10px;
-        outline: none;
-        background: transparent;
-        color: var(--text);
-        text-align: center;
-      }
-      .card button {
-        width: 100%;
-        margin-top: 14px;
-        font: inherit;
-        font-size: 16px;
-        font-weight: 600;
-        background: #00a884;
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        padding: 13px;
-        cursor: pointer;
-      }
-      .card button:hover { opacity: .93; }
-      .card button:disabled { opacity: .5; cursor: default; }
-      .card .hint { margin-top: 14px; font-size: 12.5px; color: var(--text-soft); }
+      /* ---------- chat screen ---------- */
+      #chatScreen{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--chat-bg);z-index:30;}
+      .chat-header{background:var(--header);color:#fff;display:flex;align-items:center;gap:2px;padding:6px 6px 6px 2px;padding-top:calc(6px + env(safe-area-inset-top));flex:0 0 auto;box-shadow:0 1px 3px var(--shadow);z-index:5;}
+      .chat-header .who{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:9px;cursor:pointer;padding:2px 0;}
+      .chat-header .who .nm{font-size:16.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;}
+      .chat-header .who .st{font-size:12.5px;opacity:.88;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      #messagesArea{flex:1 1 auto;overflow-y:auto;padding:12px 8px 6px;background-color:var(--chat-bg);
+        background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1.3px),radial-gradient(rgba(0,0,0,.035) 1px,transparent 1.3px);
+        background-size:22px 22px,34px 34px;background-position:0 0,11px 17px;scroll-behavior:smooth;}
+      @media (prefers-color-scheme: dark){#messagesArea{background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1.3px),radial-gradient(rgba(255,255,255,.035) 1px,transparent 1.3px);}}
+      #messagesWrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;}
+      .day-chip{align-self:center;background:var(--bubble-in);color:var(--text-soft);font-size:12px;padding:5px 12px;border-radius:8px;box-shadow:0 1px 1px var(--shadow);margin:4px 0 12px;}
+      .mrow{display:flex;margin:1.5px 0;align-items:flex-end;gap:5px;}
+      .mrow.own{justify-content:flex-end;}
+      .bubble{max-width:80%;padding:6px 8px 5px;border-radius:8px;box-shadow:0 1px 1px var(--shadow);position:relative;overflow-wrap:anywhere;cursor:pointer;}
+      @media(min-width:640px){.bubble{max-width:63%;}}
+      .mrow.own .bubble{background:var(--bubble-out);border-top-right-radius:0;}
+      .mrow.other .bubble{background:var(--bubble-in);border-top-left-radius:0;}
+      .bubble .sender{font-size:13px;font-weight:700;margin-bottom:2px;}
+      .bubble .txt{font-size:15px;line-height:1.42;white-space:pre-wrap;}
+      .bubble .meta{display:flex;justify-content:flex-end;align-items:center;gap:2px;margin-top:2px;float:right;margin-left:10px;position:relative;top:4px;}
+      .bubble .mtime{font-size:11px;color:var(--text-soft);}
+      .bubble img.photo{max-width:100%;border-radius:6px;display:block;margin-bottom:4px;}
+      .bubble .caption{font-size:14.5px;line-height:1.4;white-space:pre-wrap;margin-top:2px;}
+      .bubble audio{max-width:230px;height:38px;margin:2px 0;}
+      .bubble .deleted{font-style:italic;color:var(--text-soft);font-size:14px;}
+      .quote{border-left:3.5px solid var(--green);background:rgba(0,0,0,.05);border-radius:4px;padding:4px 7px;margin-bottom:4px;}
+      @media (prefers-color-scheme: dark){.quote{background:rgba(255,255,255,.07);}}
+      .quote .qname{font-size:12.5px;font-weight:700;color:var(--teal);}
+      .quote .qtext{font-size:13px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px;}
+      .call-log{align-self:center;background:var(--bubble-in);color:var(--text);font-size:12.5px;padding:6px 12px;border-radius:8px;box-shadow:0 1px 1px var(--shadow);margin:5px 0;display:flex;gap:6px;align-items:center;}
+      .call-log .ic{width:15px;height:15px;color:var(--text-soft);}
+      .action-bar{background:var(--teal-dark);color:#fff;display:flex;align-items:center;gap:6px;padding:8px 10px;flex:0 0 auto;}
+      .action-bar span{flex:1;font-size:14px;}
+      .reply-bar{background:var(--panel-2);border-left:4px solid var(--green);margin:0 8px;padding:7px 10px;display:flex;gap:8px;align-items:center;flex:0 0 auto;border-radius:6px 6px 0 0;}
+      .reply-bar .rb-mid{flex:1;min-width:0;}
+      .reply-bar .rb-name{font-size:13px;font-weight:700;color:var(--teal);}
+      .reply-bar .rb-text{font-size:13px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .composer-zone{background:transparent;padding:6px 8px calc(8px + env(safe-area-inset-bottom));flex:0 0 auto;background-color:var(--chat-bg);}
+      .composer{display:flex;align-items:flex-end;gap:7px;max-width:780px;margin:0 auto;}
+      .pill{flex:1 1 auto;background:var(--input-bg);border-radius:24px;display:flex;align-items:flex-end;box-shadow:0 1px 2px var(--shadow);padding:2px 4px;}
+      .pill .icon-btn{color:#8696a0;padding:8px 6px;}
+      #msgInput{flex:1 1 auto;border:none;background:transparent;font-size:16px;color:var(--text);padding:10px 2px;resize:none;max-height:110px;outline:none;line-height:1.35;min-width:0;}
+      #msgInput::placeholder{color:var(--text-soft);}
+      .round-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 1px 3px var(--shadow);}
+      .round-btn:active{transform:scale(.94);}
+      .round-btn svg{width:23px;height:23px;fill:#fff;}
+      .emoji-panel{background:var(--panel);border-top:1px solid var(--divider);max-height:220px;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:2px;flex:0 0 auto;}
+      .emoji-panel button{background:none;border:none;font-size:25px;padding:6px;border-radius:8px;}
+      .emoji-panel button:active{background:var(--panel-2);}
+      .rec-bar{display:flex;align-items:center;gap:10px;background:var(--input-bg);border-radius:24px;padding:8px 14px;box-shadow:0 1px 2px var(--shadow);flex:1;}
+      .rec-dot{width:11px;height:11px;border-radius:50%;background:var(--danger);animation:blink 1s infinite;}
+      @keyframes blink{50%{opacity:.25;}}
+      .rec-bar .rt{font-size:16px;font-variant-numeric:tabular-nums;}
+      .rec-bar .rlabel{flex:1;color:var(--text-soft);font-size:13.5px;}
+
+      /* ---------- picker / modals / overlays ---------- */
+      .sub-screen{position:fixed;inset:0;background:var(--panel);z-index:35;display:flex;flex-direction:column;}
+      .sub-header{background:var(--header);color:#fff;display:flex;align-items:center;gap:6px;padding:10px 10px 10px 4px;padding-top:calc(10px + env(safe-area-inset-top));flex:0 0 auto;}
+      .sub-header .t{flex:1;min-width:0;}
+      .sub-header .t .big{font-size:17.5px;font-weight:600;line-height:1.2;}
+      .sub-header .t .small{font-size:12.5px;opacity:.85;}
+      .sub-body{flex:1;overflow-y:auto;}
+      .pick-row{display:flex;align-items:center;gap:13px;padding:10px 15px;cursor:pointer;}
+      .pick-row:active{background:var(--panel-2);}
+      .pick-row .mid{flex:1;min-width:0;}
+      .pick-row .nm{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .pick-row .st{font-size:13px;color:var(--text-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+      .check-circle{width:24px;height:24px;border-radius:50%;border:2px solid #b6bfc4;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;}
+      .check-circle.on{background:var(--green);border-color:var(--green);}
+      .modal-veil{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;}
+      .modal-card{background:var(--panel);border-radius:14px;width:100%;max-width:400px;max-height:86dvh;overflow-y:auto;padding:20px;box-shadow:0 14px 40px rgba(0,0,0,.35);}
+      .modal-card h3{margin:0 0 12px;font-size:18px;}
+      .modal-card .mrow-btn{display:flex;width:100%;background:none;border:none;color:var(--text);font-size:15.5px;padding:12px 4px;align-items:center;gap:14px;text-align:left;border-radius:6px;}
+      .modal-card .mrow-btn:active{background:var(--panel-2);}
+      .modal-card textarea,.modal-card input[type=text]{width:100%;border:1.5px solid var(--divider);border-radius:8px;background:transparent;color:var(--text);font-size:15.5px;padding:10px;outline:none;resize:none;}
+      .modal-card textarea:focus,.modal-card input[type=text]:focus{border-color:var(--green);}
+      .menu-pop{position:fixed;top:calc(54px + env(safe-area-inset-top));right:10px;background:var(--panel);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.3);z-index:55;min-width:200px;padding:6px 0;}
+      .menu-pop button{display:block;width:100%;background:none;border:none;color:var(--text);font-size:15px;text-align:left;padding:11px 18px;}
+      .menu-pop button:active{background:var(--panel-2);}
+      .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:#111b21;color:#fff;font-size:13.5px;padding:10px 16px;border-radius:20px;z-index:80;box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:88vw;text-align:center;line-height:1.45;}
+      .errbar{display:none;background:#fdecea;color:#8f1d13;font-size:13.5px;padding:9px 14px;text-align:center;z-index:7;line-height:1.5;}
+      .errbar.show{display:block;}
+      @media (prefers-color-scheme: dark){.errbar{background:#3b1d1a;color:#f2a49d;}}
+      .photo-preview-img{max-width:100%;border-radius:8px;margin-bottom:12px;display:block;}
+
+      /* ---------- calls ---------- */
+      .call-screen{position:fixed;inset:0;background:#0b141a;z-index:70;display:flex;flex-direction:column;color:#fff;}
+      .call-screen .c-top{text-align:center;padding:calc(38px + env(safe-area-inset-top)) 20px 0;}
+      .call-screen .c-name{font-size:27px;font-weight:600;margin-top:16px;}
+      .call-screen .c-state{font-size:14.5px;color:#aebac1;margin-top:5px;}
+      .call-screen .c-ava{display:flex;justify-content:center;}
+      .call-videos{flex:1;position:relative;margin-top:14px;}
+      #remoteVideo{width:100%;height:100%;object-fit:cover;background:#111;}
+      #localVideo{position:absolute;right:14px;bottom:14px;width:104px;height:150px;object-fit:cover;border-radius:12px;background:#222;box-shadow:0 4px 14px rgba(0,0,0,.5);}
+      .call-controls{display:flex;justify-content:center;gap:20px;padding:22px 10px calc(30px + env(safe-area-inset-bottom));}
+      .call-btn{width:62px;height:62px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;color:#fff;background:#2a3942;}
+      .call-btn svg{width:27px;height:27px;fill:#fff;}
+      .call-btn.end{background:var(--danger);}
+      .call-btn.accept{background:#00a884;}
+      .call-btn.off{background:#e9edef;color:#111b21;}
+      .call-btn.off svg{fill:#111b21;}
+      .call-btn-label{font-size:11px;color:#aebac1;text-align:center;margin-top:5px;}
+      .call-col{display:flex;flex-direction:column;align-items:center;}
+      .status-view{position:fixed;inset:0;background:#000;z-index:65;display:flex;flex-direction:column;color:#fff;}
+      .status-view .s-head{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 14px 10px;}
+      .status-view .s-body{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;position:relative;}
+      .status-view .s-body img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;}
+      .status-view .s-text{font-size:23px;line-height:1.5;text-align:center;padding:28px;border-radius:14px;max-width:92%;}
+      .status-progress{height:3px;background:rgba(255,255,255,.35);border-radius:2px;margin:10px 14px 0;overflow:hidden;}
+      .status-progress i{display:block;height:100%;background:#fff;width:0%;}
+      .spin{width:38px;height:38px;border-radius:50%;border:3.5px solid rgba(0,168,132,.25);border-top-color:var(--green);animation:sp 0.8s linear infinite;margin:44px auto;}
+      @keyframes sp{to{transform:rotate(360deg);}}
     </style>
   </head>
-  <body>
-    <header>
-      <div class="avatar" aria-hidden="true">S</div>
-      <div class="head-text">
-        <div class="head-brand">MujuChat</div>
-        <div class="head-title">Sab Dost — Group Chat</div>
-        <div class="head-sub"><span class="dot" id="statusDot"></span><span id="statusText">Connect ho raha hai…</span></div>
+<body>
+
+  <!-- ============ LOGIN: phone number ============ -->
+  <section class="screen" id="screenLogin">
+    <div class="welcome-wrap">
+      <div class="logo-circle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"/></svg></div>
+      <h1>MujuChat mein khush amdeed</h1>
+      <p>Apna phone number confirm karo. Tumhare number par SMS se 6-digit code bheja jaye ga — wahi tumhara login hai, koi password nahi.</p>
+      <div class="field">
+        <label for="countrySelect">Country / Mulk</label>
+        <select id="countrySelect" aria-label="Country chuno"></select>
       </div>
-      <button class="name-btn" id="changeNameBtn" type="button" title="Apna naam badlo">Naam badlo</button>
+      <div class="phone-row">
+        <div class="field phone-code">
+          <label for="dialCode">Code</label>
+          <input type="text" id="dialCode" readonly aria-label="Dialing code" />
+        </div>
+        <div class="field phone-num">
+          <label for="phoneInput">Phone number</label>
+          <input type="tel" id="phoneInput" placeholder="300 1234567" autocomplete="tel" inputmode="tel" />
+        </div>
+      </div>
+      <div class="form-error" id="loginError" role="alert"></div>
+      <button class="btn-green" id="sendOtpBtn" type="button">Next</button>
+      <div class="hint-sm">Number bilkul sahi likho — code usi number par SMS aye ga. SMS ke charges tumhare mobile network ke hisaab se lag sakte hain.</div>
+      <div id="recaptcha-container"></div>
+    </div>
+  </section>
+
+  <!-- ============ LOGIN: OTP ============ -->
+  <section class="screen hidden" id="screenOtp">
+    <div class="welcome-wrap">
+      <div class="logo-circle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"/></svg></div>
+      <h1>Code likho</h1>
+      <p id="otpHint">SMS ka 6-digit code likho.</p>
+      <div class="field">
+        <input type="tel" id="otpInput" class="otp-input" maxlength="6" placeholder="------" autocomplete="one-time-code" inputmode="numeric" aria-label="6 digit code" />
+      </div>
+      <div class="form-error" id="otpError" role="alert"></div>
+      <button class="btn-green" id="verifyOtpBtn" type="button">Verify</button>
+      <button class="link-btn" id="resendBtn" type="button">Code dobara bhejo</button>
+      <button class="link-btn" id="changeNumberBtn" type="button">Number badlo</button>
+      <div class="hint-sm">Code aane mein 1–2 minute lag sakte hain. Signal aur number dobara check kar lo.</div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILE SETUP ============ -->
+  <section class="screen hidden" id="screenProfile">
+    <div class="welcome-wrap">
+      <h1 style="margin-top:26px;">Apni profile banao</h1>
+      <p>Ye naam aur photo sab ko chat mein nazar aye gi.</p>
+      <div class="profile-photo-pick">
+        <div class="avatar-lg" id="setupAvatar" style="width:110px;height:110px;font-size:42px;">?</div>
+        <button class="photo-cam" id="setupPhotoBtn" type="button" aria-label="Profile photo lagao"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
+      </div>
+      <div class="field">
+        <label for="setupName">Tumhara naam</label>
+        <input type="text" id="setupName" maxlength="30" placeholder="Apna naam likho" autocomplete="name" />
+      </div>
+      <div class="form-error" id="profileError" role="alert"></div>
+      <button class="btn-green" id="saveProfileBtn" type="button">Chat shuru karo</button>
+    </div>
+  </section>
+
+  <!-- ============ MAIN APP ============ -->
+  <div id="mainApp" class="hidden">
+    <header class="app-header">
+      <div class="app-name">MujuChat</div>
+      <button class="icon-btn" id="hdrCameraBtn" type="button" aria-label="Status photo"><svg class="ic" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
+      <button class="icon-btn" id="hdrSearchBtn" type="button" aria-label="Search"><svg class="ic" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg></button>
+      <button class="icon-btn" id="hdrMenuBtn" type="button" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
     </header>
-
-    <div class="errbar" id="errBar" role="alert"></div>
-
-    <main id="chatMain">
-      <div class="wrap" id="msgWrap">
-        <div class="day-note">Ye public group chat hai — jo bhi link khole ga, wo yahan chat kar sakta hai</div>
-        <div class="loading" id="loadingNote">Messages load ho rahe hain…</div>
-        <div class="empty" id="emptyNote" hidden>
-          Abhi koi message nahi hai.<br />Pehla message tum bhej kar chat shuru karo!
-        </div>
-      </div>
-    </main>
-
-    <footer>
-      <form class="composer" id="composer">
-        <div class="input-shell">
-          <textarea id="msgInput" rows="1" placeholder="Message likho…" autocomplete="off" aria-label="Message likho"></textarea>
-        </div>
-        <button class="send-btn" id="sendBtn" type="submit" aria-label="Message bhejo" title="Bhejo">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21.9 12 3.4 3.6l-.01 6.53L14 12 3.39 13.87z"/></svg>
-        </button>
-      </form>
-    </footer>
-
-    <!-- Welcome screen -->
-    <div class="overlay" id="welcomeOverlay">
-      <div class="card">
-        <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3zm-4.2 8.2c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm4.2 0c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9zm4.2 0c-.5 0-.9-.4-.9-.9s.4-.9.9-.9.9.4.9.9-.4.9-.9.9z"/></svg>
-        </div>
-        <h1>MujuChat</h1>
-        <p>Sab Dost group chat mein khush amdeed! Chat shuru karne ke liye bas apna naam likho — koi account ya password nahi chahiye.</p>
-        <form id="nameForm">
-          <input id="nameInput" type="text" maxlength="30" placeholder="Apna naam likho" autocomplete="name" aria-label="Apna naam" />
-          <button id="nameSubmit" type="submit">Chat shuru karo</button>
-        </form>
-        <div class="hint">Naam sirf is device par save hota hai, baad mein header se badla bhi ja sakta hai.</div>
+    <div class="search-bar hidden" id="searchBar">
+      <div class="shell">
+        <svg class="ic sm" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+        <input id="searchInput" type="text" placeholder="Search chats ya log…" aria-label="Search" />
       </div>
     </div>
+    <div class="errbar" id="errBar" role="alert"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script>
-      (function () {
-        "use strict";
+    <main class="view" id="viewChats"><div id="chatList"><div class="spin"></div></div></main>
 
-        var firebaseConfig = {
-          apiKey: "AIzaSyDzzE1dDgjsHxazLFodHTygMTocmnusxyw",
-          authDomain: "mujuchat-80885.firebaseapp.com",
-          projectId: "mujuchat-80885",
-          storageBucket: "mujuchat-80885.firebasestorage.app",
-          messagingSenderId: "758656659346",
-          appId: "1:758656659346:web:f4a25063fd1df3dbd3db4b"
+    <main class="view hidden" id="viewStatus">
+      <div class="status-row" id="myStatusRow">
+        <div style="position:relative;" id="myStatusAvaWrap"><div class="avatar a56" id="myStatusAvatar">?</div><span class="plus-badge">+</span></div>
+        <div><div class="nm">My Status</div><div class="tm" id="myStatusSub">Tap karo — status lagao</div></div>
+      </div>
+      <div class="section-label" id="recentLabel">Recent updates</div>
+      <div id="statusList"><div class="empty-note">Abhi kisi ka status nahi hai.</div></div>
+    </main>
+
+    <main class="view hidden" id="viewCalls"><div id="callList"><div class="empty-note"><span class="big-ic">📞</span>Abhi koi call history nahi hai.<br/>Kisi chat mein ja kar call karo.</div></div></main>
+
+    <button class="fab" id="fabBtn" type="button" aria-label="Nayi chat"><svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg></button>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <button type="button" data-tab="chats" class="active"><span class="pill"><svg class="ic" viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg></span>Chats<span class="nav-badge hidden" id="navChatBadge"></span></button>
+      <button type="button" data-tab="status"><span class="pill"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 8 8h-2.2A6 6 0 1 1 12 6v3l5.5-5L12 1v3z" transform="translate(0 1)"/></svg></span>Status</button>
+      <button type="button" data-tab="calls"><span class="pill"><svg class="ic" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></span>Calls</button>
+    </nav>
+  </div>
+
+  <!-- ============ CHAT SCREEN ============ -->
+  <div id="chatScreen" class="hidden">
+    <header class="chat-header">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="who" id="chatWho">
+        <div class="avatar a40" id="chatAvatar">?</div>
+        <div style="min-width:0;"><div class="nm" id="chatName">Chat</div><div class="st" id="chatPresence">…</div></div>
+      </div>
+      <button class="icon-btn hidden" id="videoCallBtn" type="button" aria-label="Video call"><svg class="ic" viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button>
+      <button class="icon-btn hidden" id="voiceCallBtn" type="button" aria-label="Voice call"><svg class="ic" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></button>
+      <button class="icon-btn" id="chatMenuBtn" type="button" aria-label="Chat menu"><svg class="ic" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
+    </header>
+    <div class="action-bar hidden" id="actionBar">
+      <button class="icon-btn" id="actionClose" type="button" aria-label="Band karo"><svg class="ic" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+      <span>Message chuna gaya</span>
+      <button class="icon-btn" id="actionReply" type="button" aria-label="Reply"><svg class="ic" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg></button>
+      <button class="icon-btn hidden" id="actionDelete" type="button" aria-label="Delete"><svg class="ic" viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+    </div>
+    <main id="messagesArea"><div id="messagesWrap"></div></main>
+    <div class="reply-bar hidden" id="replyBar">
+      <div class="rb-mid"><div class="rb-name" id="replyName"></div><div class="rb-text" id="replyText"></div></div>
+      <button class="icon-btn" id="replyCancel" type="button" aria-label="Reply cancel" style="color:var(--text-soft);"><svg class="ic sm" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    </div>
+    <div class="emoji-panel hidden" id="emojiPanel"></div>
+    <div class="composer-zone">
+      <form class="composer" id="composerForm">
+        <div class="pill" id="composerPill">
+          <button class="icon-btn" id="emojiBtn" type="button" aria-label="Emoji"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-3.5 6A1.75 1.75 0 1 1 10.25 9.75 1.76 1.76 0 0 1 8.5 8zm7 0A1.75 1.75 0 1 1 17.25 9.75 1.76 1.76 0 0 1 15.5 8zM12 18a6.4 6.4 0 0 1-5.23-2.86h10.46A6.4 6.4 0 0 1 12 18z" transform="scale(0.96) translate(0.5 0.5)"/></svg></button>
+          <textarea id="msgInput" rows="1" placeholder="Message" aria-label="Message likho"></textarea>
+          <button class="icon-btn" id="attachBtn" type="button" aria-label="Photo bhejo"><svg class="ic" viewBox="0 0 24 24"><path d="M16.5 3H9.66a5.5 5.5 0 0 0-5.5 5.5v7A5.5 5.5 0 0 0 9.66 21h7a5.5 5.5 0 0 0 5.5-5.5V8.83a5.84 5.84 0 0 0-5.66-5.83zm3.66 12.5a3.5 3.5 0 0 1-3.5 3.5h-7a3.5 3.5 0 0 1-3.5-3.5v-7a3.5 3.5 0 0 1 3.5-3.5H16.5a3.84 3.84 0 0 1 3.66 3.83v6.67z" transform="rotate(45 12 12) scale(0.92) translate(1 1)"/></svg></button>
+          <button class="icon-btn" id="cameraBtn" type="button" aria-label="Camera"><svg class="ic" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
+        </div>
+        <div class="rec-bar hidden" id="recBar">
+          <span class="rec-dot"></span><span class="rt" id="recTime">0:00</span><span class="rlabel">Record ho raha hai… bhejne ke liye ✓ dabao</span>
+          <button class="icon-btn" id="recCancel" type="button" aria-label="Cancel" style="color:var(--danger);"><svg class="ic" viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+        </div>
+        <button class="round-btn" id="micSendBtn" type="submit" aria-label="Bhejo ya voice record karo">
+          <svg id="micIcon" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H7v2h10v-2h-4v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+          <svg id="sendIcon" viewBox="0 0 24 24" class="hidden"><path d="M3.4 20.4 21.9 12 3.4 3.6l-.01 6.53L14 12 3.39 13.87z"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ PICKER (new chat / group) ============ -->
+  <div class="sub-screen hidden" id="pickerScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="pickerBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big" id="pickerTitle">Nayi chat</div><div class="small" id="pickerSub">Kisi ko chuno</div></div>
+      <button class="icon-btn hidden" id="pickerNext" type="button" aria-label="Agay"><svg class="ic" viewBox="0 0 24 24"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4v-2z"/></svg></button>
+    </header>
+    <div class="sub-body" id="pickerBody"></div>
+  </div>
+
+  <!-- ============ GROUP NAME ============ -->
+  <div class="sub-screen hidden" id="groupNameScreen">
+    <header class="sub-header">
+      <button class="icon-btn" id="groupNameBack" type="button" aria-label="Wapas"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="t"><div class="big">Naya group</div><div class="small">Group ka naam likho</div></div>
+    </header>
+    <div style="padding:26px 22px;">
+      <div class="field"><label for="groupNameInput">Group name</label><input type="text" id="groupNameInput" maxlength="40" placeholder="Misal: Family Group" /></div>
+      <div class="hint-sm" id="groupMembersInfo"></div>
+      <button class="btn-green" id="createGroupBtn" type="button" style="width:100%;">Group banao</button>
+    </div>
+  </div>
+
+  <!-- hidden file inputs -->
+  <input type="file" id="photoInput" accept="image/*" class="hidden" />
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" />
+  <input type="file" id="profilePhotoInput" accept="image/*" class="hidden" />
+  <input type="file" id="statusPhotoInput" accept="image/*" class="hidden" />
+
+  <!-- menu popover -->
+  <div class="menu-pop hidden" id="menuPop">
+    <button type="button" id="menuProfile">Profile</button>
+    <button type="button" id="menuNewGroup">Naya group</button>
+    <button type="button" id="menuLogout">Logout</button>
+  </div>
+
+  <!-- group info modal -->
+  <div class="modal-veil hidden" id="infoModal"><div class="modal-card" id="infoCard"></div></div>
+
+  <!-- photo send modal -->
+  <div class="modal-veil hidden" id="photoModal">
+    <div class="modal-card">
+      <h3>Photo bhejo</h3>
+      <img class="photo-preview-img" id="photoPreview" alt="Bhejne wali photo" />
+      <input type="text" id="photoCaption" placeholder="Caption likho…" maxlength="300" />
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button class="link-btn" id="photoCancel" type="button" style="flex:1;">Cancel</button>
+        <button class="btn-green" id="photoSend" type="button" style="flex:1;margin-top:0;">Bhejo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- status add modal -->
+  <div class="modal-veil hidden" id="statusModal">
+    <div class="modal-card">
+      <h3>Status lagao</h3>
+      <textarea id="statusText" rows="3" placeholder="Kuch likho… (24 ghante rahe ga)" maxlength="300"></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="link-btn" id="statusPhotoBtn" type="button" style="flex:1;">📷 Photo status</button>
+        <button class="btn-green" id="statusSendBtn" type="button" style="flex:1;margin-top:0;">Lagao</button>
+      </div>
+      <button class="link-btn" id="statusCancel" type="button" style="width:100%;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- profile edit modal -->
+  <div class="modal-veil hidden" id="profileModal">
+    <div class="modal-card">
+      <h3>Meri profile</h3>
+      <div class="profile-photo-pick">
+        <div class="avatar-lg" id="editAvatar" style="width:96px;height:96px;font-size:36px;">?</div>
+        <button class="photo-cam" id="editPhotoBtn" type="button" aria-label="Photo badlo"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
+      </div>
+      <div class="field"><label for="editName">Naam</label><input type="text" id="editName" maxlength="30" /></div>
+      <div class="field"><label>Phone</label><input type="text" id="editPhone" readonly /></div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button class="link-btn" id="profileCancel" type="button" style="flex:1;">Cancel</button>
+        <button class="btn-green" id="profileSave" type="button" style="flex:1;margin-top:0;">Save</button>
+      </div>
+      <button class="link-btn" id="profileLogout" type="button" style="width:100%;color:var(--danger);margin-top:8px;">Logout</button>
+    </div>
+  </div>
+
+  <!-- status viewer -->
+  <div class="status-view hidden" id="statusView">
+    <div class="status-progress"><i id="statusProg"></i></div>
+    <div class="s-head">
+      <button class="icon-btn" id="statusClose" type="button" aria-label="Band karo" style="color:#fff;"><svg class="ic" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+      <div class="avatar a40" id="statusViewAvatar">?</div>
+      <div><div id="statusViewName" style="font-weight:600;font-size:16px;"></div><div id="statusViewTime" style="font-size:12.5px;color:#aebac1;"></div></div>
+    </div>
+    <div class="s-body" id="statusBody"></div>
+  </div>
+
+  <!-- incoming call -->
+  <div class="call-screen hidden" id="incomingScreen">
+    <div class="c-top">
+      <div style="font-size:14px;color:#aebac1;">MujuChat <span id="incomingKind">voice call</span> aa rahi hai</div>
+      <div class="c-ava" style="margin-top:26px;"><div class="avatar" id="incomingAvatar" style="width:110px;height:110px;font-size:42px;">?</div></div>
+      <div class="c-name" id="incomingName">…</div>
+      <div class="c-state" id="incomingPhone"></div>
+    </div>
+    <div style="flex:1;"></div>
+    <div class="call-controls">
+      <div class="call-col"><button class="call-btn end" id="rejectCallBtn" type="button" aria-label="Reject"><svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.22.25-4.75.72v3.1c0 .39-.23.74-.56.9-.98.49-1.95 1.18-2.68 2.03-.43.5-1.26.48-1.66-.05A11.6 11.6 0 0 1 1 12a11.6 11.6 0 0 1 21 0c-.27 1.36-.78 2.6-1.35 3.65-.4.53-1.23.55-1.66.05a8.7 8.7 0 0 0-2.68-2.03c-.33-.16-.56-.51-.56-.9v-3.1C15.22 9.25 13.6 9 12 9z" transform="rotate(135 12 12)"/></svg></button><div class="call-btn-label">Reject</div></div>
+      <div class="call-col"><button class="call-btn accept" id="acceptCallBtn" type="button" aria-label="Accept"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></button><div class="call-btn-label">Accept</div></div>
+    </div>
+  </div>
+
+  <!-- in-call -->
+  <div class="call-screen hidden" id="callScreen">
+    <div class="c-top" id="callTopInfo">
+      <div class="c-ava"><div class="avatar" id="callAvatar" style="width:104px;height:104px;font-size:40px;">?</div></div>
+      <div class="c-name" id="callName">…</div>
+      <div class="c-state" id="callState">Calling…</div>
+    </div>
+    <div class="call-videos hidden" id="callVideos">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <video id="localVideo" autoplay playsinline muted></video>
+    </div>
+    <div style="flex:1;" id="callSpacer"></div>
+    <div class="call-controls">
+      <div class="call-col"><button class="call-btn" id="toggleMicBtn" type="button" aria-label="Mic on/off"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21H7v2h10v-2h-4v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button><div class="call-btn-label">Mic</div></div>
+      <div class="call-col"><button class="call-btn hidden" id="toggleCamBtn" type="button" aria-label="Camera on/off"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><div class="call-btn-label">Camera</div></div>
+      <div class="call-col"><button class="call-btn end" id="endCallBtn" type="button" aria-label="Call khatam"><svg viewBox="0 0 24 24"><path d="M12 9c-1.6 0-3.22.25-4.75.72v3.1c0 .39-.23.74-.56.9-.98.49-1.95 1.18-2.68 2.03-.43.5-1.26.48-1.66-.05A11.6 11.6 0 0 1 1 12a11.6 11.6 0 0 1 21 0c-.27 1.36-.78 2.6-1.35 3.65-.4.53-1.23.55-1.66.05a8.7 8.7 0 0 0-2.68-2.03c-.33-.16-.56-.51-.56-.9v-3.1C15.22 9.25 13.6 9 12 9z" transform="rotate(135 12 12)"/></svg></button><div class="call-btn-label">End</div></div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+  (function(){
+    "use strict";
+    var firebaseConfig = {
+      apiKey: "AIzaSyDzzE1dDgjsHxazLFodHTygMTocmnusxyw",
+      authDomain: "mujuchat-80885.firebaseapp.com",
+      projectId: "mujuchat-80885",
+      storageBucket: "mujuchat-80885.firebasestorage.app",
+      messagingSenderId: "758656659346",
+      appId: "1:758656659346:web:f4a25063fd1df3dbd3db4b"
+    };
+    var $ = function(id){ return document.getElementById(id); };
+    var COUNTRIES = ("Afghanistan|93,Albania|355,Algeria|213,American Samoa|1684,Andorra|376,Angola|244,Anguilla|1264,Antigua and Barbuda|1268,Argentina|54,Armenia|374,Aruba|297,Australia|61,Austria|43,Azerbaijan|994,Bahamas|1242,Bahrain|973,Bangladesh|880,Barbados|1246,Belarus|375,Belgium|32,Belize|501,Benin|229,Bermuda|1441,Bhutan|975,Bolivia|591,Bosnia and Herzegovina|387,Botswana|267,Brazil|55,Brunei|673,Bulgaria|359,Burkina Faso|226,Burundi|257,Cambodia|855,Cameroon|237,Canada|1,Cape Verde|238,Cayman Islands|1345,Central African Republic|236,Chad|235,Chile|56,China|86,Colombia|57,Comoros|269,Congo|242,Congo (DRC)|243,Costa Rica|506,Croatia|385,Cuba|53,Cyprus|357,Czech Republic|420,Denmark|45,Djibouti|253,Dominica|1767,Dominican Republic|1809,Ecuador|593,Egypt|20,El Salvador|503,Equatorial Guinea|240,Eritrea|291,Estonia|372,Eswatini|268,Ethiopia|251,Fiji|679,Finland|358,France|33,Gabon|241,Gambia|220,Georgia|995,Germany|49,Ghana|233,Greece|30,Greenland|299,Grenada|1473,Guam|1671,Guatemala|502,Guinea|224,Guinea-Bissau|245,Guyana|592,Haiti|509,Honduras|504,Hong Kong|852,Hungary|36,Iceland|354,India|91,Indonesia|62,Iran|98,Iraq|964,Ireland|353,Israel|972,Italy|39,Ivory Coast|225,Jamaica|1876,Japan|81,Jordan|962,Kazakhstan|7,Kenya|254,Kiribati|686,Kuwait|965,Kyrgyzstan|996,Laos|856,Latvia|371,Lebanon|961,Lesotho|266,Liberia|231,Libya|218,Liechtenstein|423,Lithuania|370,Luxembourg|352,Macao|853,Madagascar|261,Malawi|265,Malaysia|60,Maldives|960,Mali|223,Malta|356,Mauritania|222,Mauritius|230,Mexico|52,Moldova|373,Monaco|377,Mongolia|976,Montenegro|382,Montserrat|1664,Morocco|212,Mozambique|258,Myanmar|95,Namibia|264,Nepal|977,Netherlands|31,New Caledonia|687,New Zealand|64,Nicaragua|505,Niger|227,Nigeria|234,North Korea|850,North Macedonia|389,Norway|47,Oman|968,Pakistan|92,Palestine|970,Panama|507,Papua New Guinea|675,Paraguay|595,Peru|51,Philippines|63,Poland|48,Portugal|351,Puerto Rico|1787,Qatar|974,Romania|40,Russia|7,Rwanda|250,Saint Kitts and Nevis|1869,Saint Lucia|1758,Saint Vincent and the Grenadines|1784,Samoa|685,San Marino|378,Sao Tome and Principe|239,Saudi Arabia|966,Senegal|221,Serbia|381,Seychelles|248,Sierra Leone|232,Singapore|65,Slovakia|421,Slovenia|386,Solomon Islands|677,Somalia|252,South Africa|27,South Korea|82,South Sudan|211,Spain|34,Sri Lanka|94,Sudan|249,Suriname|597,Sweden|46,Switzerland|41,Syria|963,Taiwan|886,Tajikistan|992,Tanzania|255,Thailand|66,Timor-Leste|670,Togo|228,Tonga|676,Trinidad and Tobago|1868,Tunisia|216,Turkey|90,Turkmenistan|993,Uganda|256,Ukraine|380,United Arab Emirates|971,United Kingdom|44,United States|1,Uruguay|598,Uzbekistan|998,Vanuatu|678,Venezuela|58,Vietnam|84,Virgin Islands (US)|1340,Yemen|967,Zambia|260,Zimbabwe|263").split(",").map(function(s){ var p=s.split("|"); return {name:p[0], code:p[1]}; });
+
+    /* ---------- state ---------- */
+    var db=null, auth=null, me=null, myProfile=null;
+    var usersMap={}, convsMap={}, sabLast=null, sabUnread=0;
+    var currentConv=null, currentMsgs=[], replyTo=null, selectedMsg=null;
+    var unsubs=[], convUnsub=null, msgUnsub=null, msgUnsub2=null, typingUnsub=null, callUnsub=null, statusUnsub=null;
+    var setupPhotoData="", editPhotoData=null, pendingPhotoData="";
+    var searchTerm="", pickerMode="chat", pickerSelected={};
+    var heartbeat=null;
+
+    /* ---------- helpers ---------- */
+    function esc(s){ return (s==null?"":String(s)); }
+    function initials(name){ var n=(name||"?").trim(); if(!n) return "?"; var parts=n.split(/\s+/); return (parts[0][0]||"?") + (parts.length>1 ? (parts[1][0]||"") : ""); }
+    var AV_COLORS=["#00a884","#008069","#6b7c85","#b3541e","#7c4dbd","#c2185b","#1565c0","#4e342e","#2e7d32","#546e7a"];
+    function colorFor(str){ var h=0; str=String(str||"x"); for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0; } return AV_COLORS[h%AV_COLORS.length]; }
+    function avatarHTML(name, photo, sizeCls){
+      if(photo) return '<div class="avatar '+sizeCls+'"><img src="'+photo+'" alt=""/></div>';
+      return '<div class="avatar '+sizeCls+'" style="background:'+colorFor(name)+'">'+initials(name)+'</div>';
+    }
+    function setAvatarEl(el, name, photo){
+      if(!el) return;
+      if(photo){ el.innerHTML=""; var im=document.createElement("img"); im.src=photo; im.alt=""; el.appendChild(im); el.textContent=""; el.appendChild(im); }
+      else { el.innerHTML=""; el.textContent=initials(name); el.style.background=colorFor(name); }
+    }
+    function toDate(ts){ if(!ts) return null; if(ts.toDate) { try{ return ts.toDate(); }catch(e){ return null; } } var d=new Date(ts); return isNaN(d.getTime())?null:d; }
+    function fmtClock(ts){ var d=toDate(ts); if(!d) return ""; return d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}); }
+    function fmtListTime(ts){ var d=toDate(ts); if(!d) return ""; var now=new Date(); var time=d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+      if(d.toDateString()===now.toDateString()) return time;
+      var y=new Date(now); y.setDate(now.getDate()-1); if(d.toDateString()===y.toDateString()) return "Kal";
+      return d.toLocaleDateString([], {day:"numeric", month:"numeric", year:"2-digit"}); }
+    function fmtLastSeen(ts){ var d=toDate(ts); if(!d) return ""; var now=new Date(); var time=d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+      if(d.toDateString()===now.toDateString()) return "last seen aaj " + time;
+      var y=new Date(now); y.setDate(now.getDate()-1); if(d.toDateString()===y.toDateString()) return "last seen kal " + time;
+      return "last seen " + d.toLocaleDateString([], {day:"numeric", month:"short"}) + ", " + time; }
+    function dayLabel(ts){ var d=toDate(ts); if(!d) return ""; var now=new Date();
+      if(d.toDateString()===now.toDateString()) return "Aaj";
+      var y=new Date(now); y.setDate(now.getDate()-1); if(d.toDateString()===y.toDateString()) return "Kal";
+      return d.toLocaleDateString([], {day:"numeric", month:"long", year:"numeric"}); }
+    function timeAgo(ts){ var d=toDate(ts); if(!d) return ""; var mins=Math.max(1, Math.round((Date.now()-d.getTime())/60000));
+      if(mins<60) return mins + " minute pehle"; var h=Math.round(mins/60); if(h<24) return h + (h===1?" ghanta":" ghante") + " pehle"; return fmtListTime(ts); }
+    var toastTimer=null;
+    function toast(msg){ var t=$("toast"); t.textContent=msg; t.classList.remove("hidden"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.add("hidden"); }, 3400); }
+    function showErr(msg){ var b=$("errBar"); if(!msg){ b.classList.remove("show"); b.textContent=""; return; } b.textContent=msg; b.classList.add("show"); }
+    function formErr(id, msg){ var e=$(id); if(!e) return; if(!msg){ e.classList.remove("show"); e.textContent=""; return; } e.textContent=msg; e.classList.add("show"); }
+    function compressImage(file, maxPx, quality){
+      return new Promise(function(resolve, reject){
+        var url=URL.createObjectURL(file); var img=new Image();
+        img.onload=function(){
+          var w=img.naturalWidth, h=img.naturalHeight; var scale=Math.min(1, maxPx/Math.max(w,h));
+          var cw=Math.max(1, Math.round(w*scale)), ch=Math.max(1, Math.round(h*scale));
+          var c=document.createElement("canvas"); c.width=cw; c.height=ch;
+          c.getContext("2d").drawImage(img,0,0,cw,ch); URL.revokeObjectURL(url);
+          var q=quality||0.78, data=c.toDataURL("image/jpeg", q);
+          while(data.length>880000 && q>0.35){ q-=0.13; data=c.toDataURL("image/jpeg", q); }
+          if(data.length>950000){ reject(new Error("too big")); return; }
+          resolve(data);
         };
+        img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error("bad image")); };
+        img.src=url;
+      });
+    }
+    function blobToDataURL(blob){ return new Promise(function(resolve, reject){ var r=new FileReader(); r.onload=function(){ resolve(r.result); }; r.onerror=reject; r.readAsDataURL(blob); }); }
+    function previewTextFor(m){
+      if(!m) return "";
+      if(m.deleted) return "🚫 Message delete ho gaya";
+      if(m.type==="image") return "📷 Photo" + (m.text ? " — " + m.text : "");
+      if(m.type==="audio") return "🎤 Voice message";
+      if(m.type==="call") return "📞 " + (m.text||"Call");
+      return m.text||"";
+    }
+    function isOtherRead(m, conv){
+      if(!m || !m.readBy) return false;
+      if(conv && conv.type==="group"){ return m.readBy.length >= Math.max(1, (conv.members||[]).length - 1); }
+      for(var i=0;i<m.readBy.length;i++){ if(m.readBy[i]!==m.senderId) return true; }
+      return false;
+    }
+    function tickHTML(m, conv){
+      if(!m || m.senderId!==me.uid) return "";
+      if(isOtherRead(m, conv)) return '<span class="ticks blue">✓✓</span>';
+      if(m.readBy && m.readBy.length) return '<span class="ticks">✓✓</span>';
+      return '<span class="ticks">✓</span>';
+    }
 
-        var NAME_KEY = "mujuchat_name";
-        var myName = "";
-        try { myName = (localStorage.getItem(NAME_KEY) || "").trim(); } catch (e) { myName = ""; }
+    /* ---------- firebase init ---------- */
+    function initFirebase(){
+      if(typeof firebase==="undefined"){ formErr("loginError","Internet ya Firebase load nahi hua — page refresh karke dobara koshish karo."); return false; }
+      if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      auth=firebase.auth(); db=firebase.firestore();
+      try{ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
+      return true;
+    }
 
-        var overlay = document.getElementById("welcomeOverlay");
-        var nameForm = document.getElementById("nameForm");
-        var nameInput = document.getElementById("nameInput");
-        var nameSubmit = document.getElementById("nameSubmit");
-        var changeNameBtn = document.getElementById("changeNameBtn");
-        var main = document.getElementById("chatMain");
-        var wrap = document.getElementById("msgWrap");
-        var loadingNote = document.getElementById("loadingNote");
-        var emptyNote = document.getElementById("emptyNote");
-        var composer = document.getElementById("composer");
-        var input = document.getElementById("msgInput");
-        var sendBtn = document.getElementById("sendBtn");
-        var errBar = document.getElementById("errBar");
-        var statusDot = document.getElementById("statusDot");
-        var statusText = document.getElementById("statusText");
+    /* ---------- country picker ---------- */
+    var countrySelect=$("countrySelect"), dialCodeInput=$("dialCode");
+    COUNTRIES.forEach(function(c){ var o=document.createElement("option"); o.value=c.code; o.textContent=c.name+" (+"+c.code+")"; o.dataset.name=c.name; countrySelect.appendChild(o); });
+    countrySelect.value="92"; dialCodeInput.value="+92";
+    countrySelect.addEventListener("change", function(){ dialCodeInput.value="+"+countrySelect.value; });
 
-        var db = null;
-        var messagesRef = null;
-        var started = false;
+    /* ---------- phone auth ---------- */
+    var recaptchaVerifier=null, otpResult=null;
+    function setupRecaptcha(){
+      if(recaptchaVerifier){ try{ recaptchaVerifier.clear(); }catch(e){} recaptchaVerifier=null; }
+      recaptchaVerifier=new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible" });
+    }
+    function friendlyAuthError(err){
+      var code=(err && err.code) || "";
+      if(code.indexOf("too-many-requests")>=0 || code.indexOf("quota")>=0) return "Abhi SMS nahi bheja ja sakta — Firebase ki free SMS limit khatam ho sakti hai ya bohat zyada koshishain ho gayi hain. Kuch dair baad dobara koshish karo.";
+      if(code.indexOf("invalid-phone-number")>=0) return "Phone number sahi nahi hai. Country code ke saath pura number check karo.";
+      if(code.indexOf("invalid-verification-code")>=0) return "Code galat hai — SMS wala 6-digit code dobara ghoor se likho.";
+      if(code.indexOf("code-expired")>=0 || code.indexOf("session-expired")>=0) return "Code ki muddat khatam ho gayi hai. 'Code dobara bhejo' dabao.";
+      if(code.indexOf("network")>=0) return "Internet ka masla hai — connection check karke dobara koshish karo.";
+      if(code.indexOf("unauthorized-domain")>=0) return "Ye website Firebase mein approved nahi hai. Firebase Console → Authentication → Settings → Authorized domains mein is page ka domain add karna hoga.";
+      if(code.indexOf("captcha")>=0 || code.indexOf("missing-app-credential")>=0) return "reCAPTCHA check fail ho gaya — page refresh karke dobara koshish karo.";
+      return "Kuch ghalat ho gaya: " + ((err && err.message) || code || "dobara koshish karo");
+    }
+    $("sendOtpBtn").addEventListener("click", function(){
+      formErr("loginError","");
+      var raw=$("phoneInput").value.replace(/[^\d]/g,"");
+      if(raw.length<6){ formErr("loginError","Sahi phone number likho (kam az kam 6 digit)."); return; }
+      var code=countrySelect.value;
+      if(code==="92" && raw.charAt(0)==="0") raw=raw.slice(1);
+      var e164="+"+code+raw;
+      var btn=$("sendOtpBtn"); btn.disabled=true; btn.textContent="Code bheja ja raha hai…";
+      try{ setupRecaptcha(); }catch(e){ btn.disabled=false; btn.textContent="Next"; formErr("loginError","reCAPTCHA load nahi hua — page refresh karo."); return; }
+      auth.signInWithPhoneNumber(e164, recaptchaVerifier).then(function(cr){
+        otpResult=cr; btn.disabled=false; btn.textContent="Next";
+        try{ localStorage.setItem("mujuchat_pending_phone", e164); }catch(e){}
+        $("otpHint").textContent="Code is number par bheja gaya hai: " + e164 + " — SMS ka 6-digit code likho.";
+        $("screenLogin").classList.add("hidden"); $("screenOtp").classList.remove("hidden");
+        setTimeout(function(){ $("otpInput").focus(); },80);
+      }).catch(function(err){
+        btn.disabled=false; btn.textContent="Next";
+        formErr("loginError", friendlyAuthError(err));
+      });
+    });
+    $("verifyOtpBtn").addEventListener("click", function(){
+      formErr("otpError","");
+      var codeIn=$("otpInput").value.replace(/[^\d]/g,"");
+      if(codeIn.length!==6){ formErr("otpError","Poora 6-digit code likho."); return; }
+      if(!otpResult){ formErr("otpError","Pehle number par code bhejo — 'Number badlo' dabaa kar dobara shuru karo."); return; }
+      var btn=$("verifyOtpBtn"); btn.disabled=true; btn.textContent="Check ho raha hai…";
+      var confirmOtp=otpResult.confirm.bind(otpResult);
+      confirmOtp(codeIn).then(function(){
+        btn.disabled=false; btn.textContent="Verify";
+        /* onAuthStateChanged aage sambhale ga */
+      }).catch(function(err){
+        btn.disabled=false; btn.textContent="Verify";
+        formErr("otpError", friendlyAuthError(err));
+      });
+    });
+    $("resendBtn").addEventListener("click", function(){
+      $("screenOtp").classList.add("hidden"); $("screenLogin").classList.remove("hidden");
+      formErr("loginError",""); toast("Number check karke Next dabao — naya code bheja jaye ga.");
+    });
+    $("changeNumberBtn").addEventListener("click", function(){
+      otpResult=null; $("otpInput").value="";
+      $("screenOtp").classList.add("hidden"); $("screenLogin").classList.remove("hidden");
+    });
 
-        function showError(msg) {
-          errBar.textContent = msg;
-          errBar.classList.add("show");
-        }
-        function hideError() { errBar.classList.remove("show"); }
-
-        function setStatus(online, text) {
-          statusDot.classList.toggle("on", !!online);
-          statusText.textContent = text;
-        }
-
-        function fmtTime(ts) {
-          if (!ts) return "abhi";
-          try {
-            var d = ts.toDate ? ts.toDate() : new Date(ts);
-            var now = new Date();
-            var sameDay = d.toDateString() === now.toDateString();
-            var time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-            if (sameDay) return time;
-            var yest = new Date(now); yest.setDate(now.getDate() - 1);
-            if (d.toDateString() === yest.toDateString()) return "Kal, " + time;
-            return d.toLocaleDateString([], { day: "numeric", month: "short" }) + ", " + time;
-          } catch (e) { return ""; }
-        }
-
-        function nearBottom() {
-          return main.scrollHeight - main.scrollTop - main.clientHeight < 140;
-        }
-        function scrollBottom() {
-          main.scrollTop = main.scrollHeight;
-        }
-
-        function renderMessages(docs) {
-          var stick = nearBottom();
-          // Remove old message rows, keep the day-note / loading / empty nodes.
-          var old = wrap.querySelectorAll(".row");
-          for (var i = 0; i < old.length; i++) old[i].remove();
-
-          loadingNote.hidden = true;
-          emptyNote.hidden = docs.length !== 0;
-
-          docs.forEach(function (doc) {
-            var data = doc.data() || {};
-            var name = (data.name || "Mehman").toString();
-            var text = (data.text || "").toString();
-            var own = name === myName;
-
-            var row = document.createElement("div");
-            row.className = "row " + (own ? "own" : "other");
-
-            var bubble = document.createElement("div");
-            bubble.className = "bubble";
-
-            if (!own) {
-              var sender = document.createElement("div");
-              sender.className = "sender";
-              sender.textContent = name;
-              bubble.appendChild(sender);
-            }
-
-            var body = document.createElement("div");
-            body.className = "msg-text";
-            body.textContent = text;
-            bubble.appendChild(body);
-
-            var meta = document.createElement("div");
-            meta.className = "msg-meta";
-            var time = document.createElement("span");
-            time.className = "msg-time";
-            time.textContent = fmtTime(data.createdAt);
-            meta.appendChild(time);
-            if (own) {
-              var ticks = document.createElement("span");
-              ticks.className = "ticks";
-              ticks.textContent = "✓✓";
-              ticks.setAttribute("aria-hidden", "true");
-              meta.appendChild(ticks);
-            }
-            bubble.appendChild(meta);
-
-            row.appendChild(bubble);
-            wrap.appendChild(row);
-          });
-
-          if (stick || docs.length) scrollBottom();
-        }
-
-        function startChat() {
-          if (started) return;
-          started = true;
-
-          if (typeof firebase === "undefined" || !firebase.firestore) {
-            setStatus(false, "Connect nahi ho saka");
-            showError("Chat load nahi ho saki — internet check karke page dobara kholo.");
-            loadingNote.textContent = "Connection ka masla hai. Page refresh karke dobara koshish karo.";
-            return;
-          }
-
-          try {
-            if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            messagesRef = db.collection("messages");
-          } catch (e) {
-            setStatus(false, "Connect nahi ho saka");
-            showError("Chat load nahi ho saki — thodi dair baad dobara koshish karo.");
-            return;
-          }
-
-          messagesRef
-            .orderBy("createdAt", "asc")
-            .limitToLast(200)
-            .onSnapshot(
-              function (snap) {
-                hideError();
-                setStatus(true, "Online — sab ke messages live aate hain");
-                renderMessages(snap.docs);
-              },
-              function (err) {
-                setStatus(false, "Connect nahi ho saka");
-                showError("Messages load nahi ho rahe — internet check karke page dobara kholo.");
-              }
-            );
-        }
-
-        function askName(prefill) {
-          overlay.classList.add("show");
-          nameInput.value = prefill || myName || "";
-          nameSubmit.disabled = !(nameInput.value.trim().length > 0);
-          setTimeout(function () { nameInput.focus(); }, 60);
-        }
-
-        nameInput.addEventListener("input", function () {
-          nameSubmit.disabled = nameInput.value.trim().length === 0;
-        });
-
-        nameForm.addEventListener("submit", function (ev) {
-          ev.preventDefault();
-          var n = nameInput.value.trim();
-          if (!n) return;
-          myName = n.slice(0, 30);
-          try { localStorage.setItem(NAME_KEY, myName); } catch (e) {}
-          overlay.classList.remove("show");
-          startChat();
-          input.focus();
-        });
-
-        changeNameBtn.addEventListener("click", function () { askName(myName); });
-
-        function autoGrow() {
-          input.style.height = "auto";
-          input.style.height = Math.min(input.scrollHeight, 110) + "px";
-        }
-        input.addEventListener("input", autoGrow);
-        input.addEventListener("keydown", function (ev) {
-          if (ev.key === "Enter" && !ev.shiftKey) {
-            ev.preventDefault();
-            composer.requestSubmit ? composer.requestSubmit() : sendMessage();
-          }
-        });
-
-        function sendMessage() {
-          var text = input.value.trim();
-          if (!text) return;
-          if (!myName) { askName(""); return; }
-          if (!messagesRef) {
-            showError("Abhi connect nahi hua — aik lamha ruko aur dobara bhejo.");
-            return;
-          }
-          input.value = "";
-          autoGrow();
-          sendBtn.disabled = true;
-
-          messagesRef
-            .add({
-              name: myName,
-              text: text.slice(0, 2000),
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(function () {
-              hideError();
-              sendBtn.disabled = false;
-              scrollBottom();
-              input.focus();
-            })
-            .catch(function () {
-              sendBtn.disabled = false;
-              showError("Message nahi gaya — internet check karke dobara bhejo.");
-              input.value = text;
-              autoGrow();
-            });
-        }
-
-        composer.addEventListener("submit", function (ev) {
-          ev.preventDefault();
-          sendMessage();
-        });
-
-        // Boot
-        if (myName) {
-          startChat();
+    /* ---------- auth state / presence ---------- */
+    function showOnly(id){
+      ["screenLogin","screenOtp","screenProfile"].forEach(function(s){ $(s).classList.toggle("hidden", s!==id); });
+      $("mainApp").classList.toggle("hidden", !!id);
+      if(id){ $("chatScreen").classList.add("hidden"); }
+    }
+    function setPresence(online){
+      if(!db || !me) return;
+      var upd={ online:!!online, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
+      db.collection("users").doc(me.uid).set(upd, {merge:true}).catch(function(){});
+    }
+    function startHeartbeat(){
+      if(heartbeat) clearInterval(heartbeat);
+      heartbeat=setInterval(function(){ if(!document.hidden) setPresence(true); }, 45000);
+      window.addEventListener("beforeunload", function(){ setPresence(false); });
+      document.addEventListener("visibilitychange", function(){ setPresence(!document.hidden); });
+    }
+    function onSignedIn(user){
+      me=user;
+      var uref=db.collection("users").doc(user.uid);
+      uref.get().then(function(snap){
+        var data=snap.exists ? snap.data() : null;
+        if(data && data.name){
+          myProfile=data;
+          try{ localStorage.setItem("mujuchat_name", data.name); }catch(e){}
+          enterApp();
         } else {
-          setStatus(false, "Pehle apna naam likho");
-          askName("");
+          myProfile=data||{};
+          setupPhotoData=(data && data.avatar) || "";
+          if(setupPhotoData) setAvatarEl($("setupAvatar"), "", setupPhotoData);
+          var saved=""; try{ saved=localStorage.getItem("mujuchat_name")||""; }catch(e){}
+          if(saved) $("setupName").value=saved;
+          uref.set({ phone:user.phoneNumber||"", createdAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true}).catch(function(){});
+          showOnly("screenProfile");
         }
-      })();
-    </script>
-  </body>
+      }).catch(function(){ showOnly("screenProfile"); });
+    }
+    $("setupPhotoBtn").addEventListener("click", function(){ $("profilePhotoInput").click(); });
+    $("profilePhotoInput").addEventListener("change", function(){
+      var f=this.files && this.files[0]; this.value="";
+      if(!f) return;
+      var target = !$("profileModal").classList.contains("hidden") ? "edit" : "setup";
+      compressImage(f, 400, 0.8).then(function(data){
+        if(target==="edit"){ editPhotoData=data; setAvatarEl($("editAvatar"), "", data); }
+        else { setupPhotoData=data; setAvatarEl($("setupAvatar"), "", data); }
+      }).catch(function(){ toast("Photo bohat bari hai — chhoti photo chuno."); });
+    });
+    $("saveProfileBtn").addEventListener("click", function(){
+      formErr("profileError","");
+      var nm=$("setupName").value.trim();
+      if(!nm){ formErr("profileError","Apna naam likho — yehi naam sab ko nazar aye ga."); return; }
+      var btn=$("saveProfileBtn"); btn.disabled=true; btn.textContent="Save ho raha hai…";
+      var doc={ name:nm.slice(0,30), phone:(me && me.phoneNumber)||"", online:true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
+      if(setupPhotoData) doc.avatar=setupPhotoData;
+      db.collection("users").doc(me.uid).set(doc, {merge:true}).then(function(){
+        btn.disabled=false; btn.textContent="Chat shuru karo";
+        myProfile=Object.assign({}, myProfile, doc);
+        try{ localStorage.setItem("mujuchat_name", doc.name); }catch(e){}
+        enterApp();
+      }).catch(function(){ btn.disabled=false; btn.textContent="Chat shuru karo"; formErr("profileError","Profile save nahi hui — internet check karke dobara koshish karo."); });
+    });
+    function doLogout(){
+      setPresence(false);
+      if(heartbeat) clearInterval(heartbeat);
+      stopAllListeners();
+      auth.signOut().then(function(){ location.reload(); }).catch(function(){ location.reload(); });
+    }
+
+    /* ---------- app boot / listeners ---------- */
+    function stopAllListeners(){
+      unsubs.forEach(function(u){ try{u();}catch(e){} }); unsubs=[];
+      if(convUnsub){try{convUnsub();}catch(e){} convUnsub=null;}
+      if(typingUnsub){try{typingUnsub();}catch(e){} typingUnsub=null;}
+      closeChatListeners();
+    }
+    function closeChatListeners(){
+      if(msgUnsub){try{msgUnsub();}catch(e){} msgUnsub=null;}
+      if(msgUnsub2){try{msgUnsub2();}catch(e){} msgUnsub2=null;}
+    }
+    function enterApp(){
+      if(window.__enteredApp) return; window.__enteredApp=true;
+      showOnly(null);
+      setPresence(true); startHeartbeat();
+      ensureSabDoc();
+      /* users */
+      unsubs.push(db.collection("users").limit(300).onSnapshot(function(snap){
+        usersMap={};
+        snap.docs.forEach(function(d){ usersMap[d.id]=Object.assign({uid:d.id}, d.data()); });
+        renderChatList(); renderPicker(); updateMyStatusRow();
+      }, function(){ showErr("Users list load nahi ho rahi — internet check karo."); }));
+      /* my conversations */
+      unsubs.push(db.collection("conversations").where("members","array-contains", me.uid).limit(100).onSnapshot(function(snap){
+        snap.docs.forEach(function(d){ convsMap[d.id]=Object.assign({id:d.id}, d.data()); });
+        renderChatList();
+        if(currentConv && convsMap[currentConv.id]){ currentConv=convsMap[currentConv.id]; updateChatHeader(); }
+      }, function(){ /* conversations query fail — list phir bhi Sab Dost dikhaye ga */ }));
+      /* Sab Dost last message (legacy collection) */
+      unsubs.push(db.collection("messages").orderBy("createdAt","asc").limitToLast(1).onSnapshot(function(snap){
+        sabLast = snap.docs.length ? Object.assign({id:snap.docs[0].id}, snap.docs[0].data()) : null;
+        renderChatList();
+      }, function(){}));
+      /* statuses */
+      unsubs.push(db.collection("statuses").orderBy("createdAt","desc").limit(120).onSnapshot(function(snap){
+        var now=Date.now(); window.__statuses=[];
+        snap.docs.forEach(function(d){ var s=Object.assign({id:d.id}, d.data()); var ex=toDate(s.expiresAt); if(!ex || ex.getTime()>now) window.__statuses.push(s); });
+        renderStatuses();
+      }, function(){}));
+      /* my call history */
+      unsubs.push(db.collection("calls").where("callerId","==", me.uid).limit(40).onSnapshot(function(snap){ snap.docs.forEach(function(d){ callHistDocs[d.id]=Object.assign({id:d.id}, d.data()); }); mergeCallHistory(); }, function(){}));
+      unsubs.push(db.collection("calls").where("calleeId","==", me.uid).limit(40).onSnapshot(function(snap){ snap.docs.forEach(function(d){ callHistDocs[d.id]=Object.assign({id:d.id}, d.data()); }); mergeCallHistory(); }, function(){}));
+      listenIncomingCalls();
+      renderChatList();
+    }
+    var callHistDocs={};
+    function mergeCallHistory(){
+      var list=Object.keys(callHistDocs).map(function(k){ return callHistDocs[k]; });
+      list.sort(function(a,b){ var ta=toDate(a.createdAt), tb=toDate(b.createdAt); return (tb?tb.getTime():0)-(ta?ta.getTime():0); });
+      renderCallHistory(list.slice(0,50));
+    }
+    function ensureSabDoc(){
+      db.collection("conversations").doc("sabdost").set({
+        type:"everyone", name:"Sab Dost", public:true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true}).catch(function(){});
+    }
+
+    /* ---------- tabs ---------- */
+    var currentTab="chats";
+    function switchTab(tab){
+      currentTab=tab;
+      $("viewChats").classList.toggle("hidden", tab!=="chats");
+      $("viewStatus").classList.toggle("hidden", tab!=="status");
+      $("viewCalls").classList.toggle("hidden", tab!=="calls");
+      $("fabBtn").classList.toggle("hidden", tab!=="chats");
+      var btns=$("bottomNav").querySelectorAll("button");
+      btns.forEach(function(b){ b.classList.toggle("active", b.getAttribute("data-tab")===tab); });
+    }
+    $("bottomNav").addEventListener("click", function(ev){
+      var b=ev.target.closest("button[data-tab]"); if(!b) return; switchTab(b.getAttribute("data-tab"));
+    });
+    $("hdrSearchBtn").addEventListener("click", function(){
+      var bar=$("searchBar"); bar.classList.toggle("hidden");
+      if(!bar.classList.contains("hidden")) $("searchInput").focus(); else { searchTerm=""; $("searchInput").value=""; renderChatList(); }
+    });
+    $("searchInput").addEventListener("input", function(){ searchTerm=this.value.trim().toLowerCase(); renderChatList(); if(!$("pickerScreen").classList.contains("hidden")) renderPicker(); });
+    $("hdrCameraBtn").addEventListener("click", function(){ switchTab("status"); openStatusModal(); });
+    $("hdrMenuBtn").addEventListener("click", function(ev){ ev.stopPropagation(); $("menuPop").classList.toggle("hidden"); });
+    document.addEventListener("click", function(ev){ if(!$("menuPop").contains(ev.target) && ev.target!==$("hdrMenuBtn")) $("menuPop").classList.add("hidden"); });
+    $("menuProfile").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); openProfileModal(); });
+    $("menuNewGroup").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); openPicker("group"); });
+    $("menuLogout").addEventListener("click", function(){ $("menuPop").classList.add("hidden"); doLogout(); });
+
+    /* ---------- chat list ---------- */
+    function convTitle(c){
+      if(!c) return "";
+      if(c.type==="everyone") return "Sab Dost";
+      if(c.type==="group") return c.name||"Group";
+      var other=(c.members||[]).filter(function(u){ return u!==me.uid; })[0];
+      var u=usersMap[other]; return (u && u.name) || c.names && c.names[other] || "Dost";
+    }
+    function convAvatar(c){
+      if(c.type==="everyone") return {name:"Sab Dost", photo:""};
+      if(c.type==="group") return {name:c.name||"G", photo:c.photo||""};
+      var other=(c.members||[]).filter(function(u){ return u!==me.uid; })[0];
+      var u=usersMap[other]||{}; return {name:(u.name)||"Dost", photo:u.avatar||""};
+    }
+    function buildListItems(){
+      var items=[];
+      /* Sab Dost always first-class */
+      var sabItem={ id:"sabdost", type:"everyone", name:"Sab Dost", photo:"", lastText: sabLast ? previewTextFor({type: sabLast.type||"text", text:sabLast.text, deleted:sabLast.deleted}) : "Sab ke liye public group chat",
+        lastAt: sabLast ? sabLast.createdAt : null, lastSenderId: sabLast ? (sabLast.uid||null) : null, unread: 0, lastMsgObj: sabLast ? {senderId:sabLast.uid, readBy:sabLast.readBy||[], deleted:sabLast.deleted} : null };
+      items.push(sabItem);
+      Object.keys(convsMap).forEach(function(id){
+        var c=convsMap[id]; if(c.type==="everyone") return;
+        var av=convAvatar(c);
+        items.push({ id:id, type:c.type, name:convTitle(c), photo:av.photo, lastText:c.lastText||"Chat shuru karo", lastAt:c.lastAt||c.createdAt||null,
+          lastSenderId:c.lastSenderId||null, unread:(c.unread && c.unread[me.uid])||0,
+          lastMsgObj:{ senderId:c.lastSenderId, readBy:c.lastReadBy||[] }, conv:c });
+      });
+      items.sort(function(a,b){
+        if(a.id==="sabdost") return -1; if(b.id==="sabdost") return 1;
+        var ta=toDate(a.lastAt), tb=toDate(b.lastAt); return (tb?tb.getTime():0)-(ta?ta.getTime():0);
+      });
+      return items;
+    }
+    function renderChatList(){
+      var listEl=$("chatList"); if(!me || !listEl) return;
+      var items=buildListItems();
+      if(searchTerm) items=items.filter(function(it){ return it.name.toLowerCase().indexOf(searchTerm)>=0 || (it.lastText||"").toLowerCase().indexOf(searchTerm)>=0; });
+      listEl.innerHTML="";
+      var totalUnread=0;
+      if(!items.length){ listEl.innerHTML='<div class="empty-note"><span class="big-ic">💬</span>Koi chat nahi mili.</div>'; return; }
+      items.forEach(function(it, idx){
+        totalUnread+=it.unread||0;
+        var row=document.createElement("div"); row.className="chat-row";
+        row.innerHTML=avatarHTML(it.name, it.photo, "a49")+
+          '<div class="mid"><div class="top-line"><div class="nm"></div><div class="tm'+(it.unread?" unread":"")+'">'+esc(fmtListTime(it.lastAt))+'</div></div>'+
+          '<div class="preview">'+(it.lastMsgObj? tickHTML(it.lastMsgObj, it.conv):"")+'<span class="pv"></span>'+(it.unread? '<span class="badge">'+it.unread+'</span>':"")+'</div></div>';
+        row.querySelector(".nm").textContent=it.name;
+        row.querySelector(".pv").textContent=it.lastText||"";
+        row.addEventListener("click", function(){ openChat(it.id); });
+        listEl.appendChild(row);
+        if(idx<items.length-1){ var d=document.createElement("div"); d.className="list-divider"; listEl.appendChild(d); }
+      });
+      var nb=$("navChatBadge");
+      if(totalUnread>0){ nb.classList.remove("hidden"); nb.textContent=totalUnread>99?"99+":totalUnread; } else nb.classList.add("hidden");
+    }
+
+    /* ---------- picker (new chat / group) ---------- */
+    function openPicker(mode){
+      pickerMode=mode; pickerSelected={};
+      $("pickerTitle").textContent = mode==="group" ? "Group members chuno" : "Nayi chat";
+      $("pickerSub").textContent = mode==="group" ? "Kam az kam 1 dost chuno" : "Sab MujuChat users";
+      $("pickerNext").classList.toggle("hidden", mode!=="group");
+      $("pickerScreen").classList.remove("hidden");
+      renderPicker();
+    }
+    function closePicker(){ $("pickerScreen").classList.add("hidden"); }
+    $("pickerBack").addEventListener("click", closePicker);
+    $("fabBtn").addEventListener("click", function(){ openPicker("chat"); });
+    $("pickerNext").addEventListener("click", function(){
+      var sel=Object.keys(pickerSelected).filter(function(k){ return pickerSelected[k]; });
+      if(!sel.length){ toast("Pehle kam az kam ek dost chuno."); return; }
+      $("groupMembersInfo").textContent= sel.length + " dost chune gaye hain.";
+      $("groupNameScreen").classList.remove("hidden");
+      setTimeout(function(){ $("groupNameInput").focus(); },80);
+    });
+    $("groupNameBack").addEventListener("click", function(){ $("groupNameScreen").classList.add("hidden"); });
+    function renderPicker(){
+      var body=$("pickerBody"); if(!body || $("pickerScreen").classList.contains("hidden")) return;
+      body.innerHTML="";
+      if(pickerMode==="chat"){
+        var ng=document.createElement("div"); ng.className="pick-row";
+        ng.innerHTML='<div class="avatar a49" style="background:var(--green)"><svg style="width:24px;height:24px;fill:#fff;" viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zM8 11a4 4 0 1 0-.4-7.98A5.98 5.98 0 0 1 9.6 7 6 6 0 0 1 8 11zm8 2c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4zm-8.36.41C6.4 13.15 2 14.3 2 17v3h4v-3c0-1.38.64-2.6 1.64-3.59z"/></svg></div><div class="mid"><div class="nm">Naya group banao</div><div class="st">Doston ko mila kar group chat</div></div>';
+        ng.addEventListener("click", function(){ openPicker("group"); });
+        body.appendChild(ng);
+      }
+      var users=Object.keys(usersMap).map(function(k){ return usersMap[k]; }).filter(function(u){ return u.uid!==me.uid && u.name; });
+      users.sort(function(a,b){ return (a.name||"").localeCompare(b.name||""); });
+      if(searchTerm) users=users.filter(function(u){ return (u.name||"").toLowerCase().indexOf(searchTerm)>=0; });
+      if(!users.length){ body.insertAdjacentHTML("beforeend", '<div class="empty-note">Abhi koi aur user nahi hai.<br/>Link doston ko bhejo — wo login karenge to yahan nazar ayenge.</div>'); return; }
+      users.forEach(function(u){
+        var row=document.createElement("div"); row.className="pick-row";
+        row.innerHTML=avatarHTML(u.name, u.avatar, "a49")+'<div class="mid"><div class="nm"></div><div class="st"></div></div>'+(pickerMode==="group" ? '<span class="check-circle'+(pickerSelected[u.uid]?" on":"")+'">'+(pickerSelected[u.uid]?"✓":"")+'</span>' : "");
+        row.querySelector(".nm").textContent=u.name;
+        row.querySelector(".st").textContent= u.online ? "online" : (u.phone || fmtLastSeen(u.lastSeen));
+        row.addEventListener("click", function(){
+          if(pickerMode==="group"){ pickerSelected[u.uid]=!pickerSelected[u.uid]; renderPicker(); }
+          else { closePicker(); openPrivateChat(u.uid); }
+        });
+        body.appendChild(row);
+      });
+    }
+    function privateConvId(a,b){ return "p_" + [a,b].sort().join("_"); }
+    function openPrivateChat(otherUid){
+      var cid=privateConvId(me.uid, otherUid);
+      var other=usersMap[otherUid]||{};
+      if(!convsMap[cid]){
+        var doc={ type:"private", members:[me.uid, otherUid], names:{}, createdBy:me.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastText:"", unread:{} };
+        doc.names[me.uid]=myProfile.name||""; doc.names[otherUid]=other.name||"";
+        db.collection("conversations").doc(cid).set(doc, {merge:true}).catch(function(){});
+        convsMap[cid]=Object.assign({id:cid}, doc);
+      }
+      openChat(cid);
+    }
+    $("createGroupBtn").addEventListener("click", function(){
+      var nm=$("groupNameInput").value.trim();
+      if(!nm){ toast("Group ka naam likho."); return; }
+      var sel=Object.keys(pickerSelected).filter(function(k){ return pickerSelected[k]; });
+      var members=[me.uid].concat(sel);
+      var names={}; members.forEach(function(u){ names[u]=(usersMap[u] && usersMap[u].name) || (u===me.uid ? (myProfile.name||"") : ""); });
+      var btn=$("createGroupBtn"); btn.disabled=true; btn.textContent="Ban raha hai…";
+      db.collection("conversations").add({
+        type:"group", name:nm.slice(0,40), members:members, names:names, createdBy:me.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(), lastText:"Group ban gaya 🎉", lastSenderId:me.uid, unread:{}
+      }).then(function(ref){
+        btn.disabled=false; btn.textContent="Group banao";
+        $("groupNameScreen").classList.add("hidden"); closePicker(); $("groupNameInput").value="";
+        openChat(ref.id);
+      }).catch(function(){ btn.disabled=false; btn.textContent="Group banao"; toast("Group nahi bana — internet check karo."); });
+    });
+
+    /* ---------- chat screen ---------- */
+    function otherUidOf(c){ return (c.members||[]).filter(function(u){ return u!==me.uid; })[0]; }
+    function openChat(cid){
+      closeChatListeners();
+      selectedMsg=null; replyTo=null; updateReplyBar(); $("actionBar").classList.add("hidden");
+      if(cid==="sabdost"){
+        currentConv={ id:"sabdost", type:"everyone", name:"Sab Dost", members:[] };
+      } else {
+        currentConv=convsMap[cid] || { id:cid, type:"private", members:[] };
+      }
+      $("chatScreen").classList.remove("hidden");
+      $("mainApp").classList.add("hidden");
+      updateChatHeader();
+      var isPrivate=currentConv.type==="private";
+      $("videoCallBtn").classList.toggle("hidden", !isPrivate);
+      $("voiceCallBtn").classList.toggle("hidden", !isPrivate);
+      $("messagesWrap").innerHTML='<div class="spin"></div>';
+      currentMsgs=[];
+      var q;
+      if(cid==="sabdost"){
+        q=db.collection("messages").orderBy("createdAt","asc").limitToLast(200);
+      } else {
+        q=db.collection("chatMessages").where("conversationId","==", cid).limit(300);
+      }
+      msgUnsub=q.onSnapshot(function(snap){
+        currentMsgs=snap.docs.map(function(d){ return normalizeMsg(d.id, d.data()); });
+        currentMsgs.sort(function(a,b){ var ta=toDate(a.createdAt), tb=toDate(b.createdAt); return (ta?ta.getTime():Date.now())-(tb?tb.getTime():Date.now()); });
+        renderMessages();
+        markRead();
+      }, function(err){ showErr("Messages load nahi ho rahe — internet check karo."); });
+      if(cid!=="sabdost"){
+        typingUnsub=db.collection("conversations").doc(cid).onSnapshot(function(snap){
+          if(snap.exists){ convsMap[cid]=Object.assign({id:cid}, snap.data()); if(currentConv && currentConv.id===cid){ currentConv=convsMap[cid]; updateChatHeader(); } }
+        }, function(){});
+        clearUnread(cid);
+      }
+      setTimeout(function(){ $("msgInput").focus(); },120);
+    }
+    function normalizeMsg(id, d){
+      d=d||{};
+      return { id:id, senderId:d.uid||d.senderId||null, senderName:d.name||d.senderName||"Mehman",
+        text:d.text||"", type:d.type||"text", imageData:d.imageData||"", audioData:d.audioData||"", audioType:d.audioType||"",
+        replyTo:d.replyTo||null, readBy:d.readBy||[], deleted:!!d.deleted, createdAt:d.createdAt||null };
+    }
+    function closeChat(){
+      closeChatListeners();
+      if(typingUnsub){try{typingUnsub();}catch(e){} typingUnsub=null;}
+      setTyping(false);
+      currentConv=null; currentMsgs=[];
+      $("chatScreen").classList.add("hidden");
+      $("mainApp").classList.remove("hidden");
+      renderChatList();
+    }
+    $("backBtn").addEventListener("click", closeChat);
+    function presenceText(){
+      if(!currentConv) return "";
+      var typing=getTypingUser();
+      if(typing) return "typing…";
+      if(currentConv.type==="everyone") return "Sab ke liye public group — jo login hai wo member hai";
+      if(currentConv.type==="group"){
+        return (currentConv.members||[]).map(function(u){ return u===me.uid ? "Tum" : ((usersMap[u] && usersMap[u].name) || (currentConv.names && currentConv.names[u]) || "Dost"); }).join(", ");
+      }
+      var ou=otherUidOf(currentConv); var u=usersMap[ou];
+      if(!u) return "";
+      if(u.online) return "online";
+      return fmtLastSeen(u.lastSeen) || (u.phone||"");
+    }
+    function getTypingUser(){
+      if(!currentConv || !currentConv.typing) return null;
+      var now=Date.now();
+      var keys=Object.keys(currentConv.typing);
+      for(var i=0;i<keys.length;i++){
+        if(keys[i]===me.uid) continue;
+        var t=toDate(currentConv.typing[keys[i]]);
+        if(t && now-t.getTime()<6000) return keys[i];
+      }
+      return null;
+    }
+    function updateChatHeader(){
+      if(!currentConv) return;
+      var av = currentConv.type==="everyone" ? {name:"Sab Dost", photo:""} : convAvatar(currentConv);
+      $("chatName").textContent=convTitle(currentConv);
+      setAvatarEl($("chatAvatar"), av.name, av.photo);
+      $("chatPresence").textContent=presenceText();
+    }
+    $("chatWho").addEventListener("click", function(){ if(currentConv && currentConv.type!=="private") showGroupInfo(); else if(currentConv) showGroupInfo(); });
+    $("chatMenuBtn").addEventListener("click", function(){ showGroupInfo(); });
+    function showGroupInfo(){
+      if(!currentConv) return;
+      var card=$("infoCard"); var c=currentConv;
+      var title=convTitle(c);
+      var html="<h3></h3>";
+      if(c.type==="private"){
+        var ou=otherUidOf(c); var u=usersMap[ou]||{};
+        html+='<div style="text-align:center;margin-bottom:12px;">'+avatarHTML(u.name||title, u.avatar||"", "a56")+'</div>';
+        html+='<p style="color:var(--text-soft);font-size:14px;line-height:1.6;">Phone: '+esc(u.phone||"—")+'<br/>'+(u.online?"Abhi online hai":esc(fmtLastSeen(u.lastSeen)||""))+'</p>';
+      } else if(c.type==="group"){
+        html+='<div class="section-label" style="padding-left:0;">Members ('+(c.members||[]).length+')</div>';
+        (c.members||[]).forEach(function(uid){
+          var uu=usersMap[uid]||{}; var nm= uid===me.uid ? (myProfile.name+" (Tum)") : (uu.name || (c.names && c.names[uid]) || "Dost");
+          html+='<div class="pick-row" style="padding-left:0;padding-right:0;">'+avatarHTML(nm, uu.avatar||"", "a40")+'<div class="mid"><div class="nm"></div><div class="st">'+(uu.online?"online":esc(uu.phone||""))+'</div></div></div>';
+        });
+      } else {
+        html+='<p style="color:var(--text-soft);font-size:14.5px;line-height:1.6;">Ye sab ke liye khula group hai — jo bhi MujuChat par login kare, wo yahan chat kar sakta hai.</p>';
+      }
+      html+='<button class="link-btn" id="infoClose" type="button" style="width:100%;margin-top:10px;">Band karo</button>';
+      card.innerHTML=html;
+      card.querySelector("h3").textContent=title;
+      var nms=card.querySelectorAll(".pick-row .nm");
+      if(c.type==="group"){ (c.members||[]).forEach(function(uid, i){ var uu=usersMap[uid]||{}; if(nms[i]) nms[i].textContent= uid===me.uid ? (myProfile.name+" (Tum)") : (uu.name || (c.names && c.names[uid]) || "Dost"); }); }
+      $("infoModal").classList.remove("hidden");
+      $("infoClose").addEventListener("click", function(){ $("infoModal").classList.add("hidden"); });
+    }
+    $("infoModal").addEventListener("click", function(ev){ if(ev.target===this) this.classList.add("hidden"); });
+
+    function senderColor(name){ return colorFor(name||"x"); }
+    function renderMessages(){
+      var wrapEl=$("messagesWrap"); var area=$("messagesArea");
+      var stick=area.scrollHeight-area.scrollTop-area.clientHeight<160;
+      wrapEl.innerHTML="";
+      if(!currentMsgs.length){
+        wrapEl.innerHTML='<div class="day-chip">Chat shuru karo 👋</div><div class="empty-note" style="color:var(--text-soft);">Abhi koi message nahi hai.<br/>Pehla message bhejo!</div>';
+        return;
+      }
+      var lastDay="";
+      currentMsgs.forEach(function(m){
+        var dl=dayLabel(m.createdAt);
+        if(dl && dl!==lastDay){ lastDay=dl; var chip=document.createElement("div"); chip.className="day-chip"; chip.textContent=dl; wrapEl.appendChild(chip); }
+        if(m.type==="call"){
+          var cl=document.createElement("div"); cl.className="call-log";
+          cl.innerHTML='<svg class="ic" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg><span></span>';
+          cl.querySelector("span").textContent=(m.text||"Call")+" • "+fmtClock(m.createdAt);
+          wrapEl.appendChild(cl); return;
+        }
+        var own = m.senderId ? (m.senderId===me.uid) : (m.senderName===(myProfile.name||""));
+        var row=document.createElement("div"); row.className="mrow "+(own?"own":"other");
+        var b=document.createElement("div"); b.className="bubble";
+        if(!own && currentConv.type!=="private"){
+          var sn=document.createElement("div"); sn.className="sender"; sn.style.color=senderColor(m.senderName); sn.textContent=m.senderName; b.appendChild(sn);
+        }
+        if(m.replyTo && !m.deleted){
+          var q=document.createElement("div"); q.className="quote";
+          q.innerHTML='<div class="qname"></div><div class="qtext"></div>';
+          q.querySelector(".qname").textContent=m.replyTo.senderName||"";
+          q.querySelector(".qtext").textContent=m.replyTo.text||"";
+          b.appendChild(q);
+        }
+        if(m.deleted){
+          var del=document.createElement("span"); del.className="deleted"; del.textContent="🚫 Ye message delete ho gaya"; b.appendChild(del);
+        } else if(m.type==="image" && m.imageData){
+          var im=document.createElement("img"); im.className="photo"; im.src=m.imageData; im.alt="Photo message"; b.appendChild(im);
+          if(m.text){ var cap=document.createElement("div"); cap.className="caption"; cap.textContent=m.text; b.appendChild(cap); }
+        } else if(m.type==="audio" && m.audioData){
+          var au=document.createElement("audio"); au.controls=true; au.src=m.audioData; au.preload="metadata"; b.appendChild(au);
+        } else {
+          var tx=document.createElement("span"); tx.className="txt"; tx.textContent=m.text; b.appendChild(tx);
+        }
+        var meta=document.createElement("span"); meta.className="meta";
+        meta.innerHTML='<span class="mtime">'+esc(fmtClock(m.createdAt))+'</span>'+(own? tickHTML(m, currentConv):"");
+        b.appendChild(meta);
+        row.appendChild(b);
+        b.addEventListener("click", function(){ selectMessage(m, own); });
+        wrapEl.appendChild(row);
+      });
+      if(stick) area.scrollTop=area.scrollHeight;
+    }
+    function selectMessage(m, own){
+      selectedMsg={ msg:m, own:own };
+      $("actionBar").classList.remove("hidden");
+      $("actionDelete").classList.toggle("hidden", !own);
+    }
+    $("actionClose").addEventListener("click", function(){ selectedMsg=null; $("actionBar").classList.add("hidden"); });
+    $("actionReply").addEventListener("click", function(){
+      if(!selectedMsg) return;
+      replyTo={ id:selectedMsg.msg.id, text:previewTextFor(selectedMsg.msg).slice(0,120), senderName:selectedMsg.msg.senderName };
+      selectedMsg=null; $("actionBar").classList.add("hidden");
+      updateReplyBar(); $("msgInput").focus();
+    });
+    $("actionDelete").addEventListener("click", function(){
+      if(!selectedMsg || !selectedMsg.own) return;
+      var m=selectedMsg.msg; selectedMsg=null; $("actionBar").classList.add("hidden");
+      var ref = currentConv.id==="sabdost" ? db.collection("messages").doc(m.id) : db.collection("chatMessages").doc(m.id);
+      ref.set({ deleted:true, text:"", imageData:"", audioData:"" }, {merge:true}).catch(function(){ toast("Delete nahi hua."); });
+    });
+    function updateReplyBar(){
+      var bar=$("replyBar");
+      if(replyTo){ bar.classList.remove("hidden"); $("replyName").textContent=replyTo.senderName; $("replyText").textContent=replyTo.text; }
+      else bar.classList.add("hidden");
+    }
+    $("replyCancel").addEventListener("click", function(){ replyTo=null; updateReplyBar(); });
+
+    function markRead(){
+      if(!currentConv || !me) return;
+      if(currentConv.id!=="sabdost") clearUnread(currentConv.id);
+      var batch=db.batch(); var count=0;
+      currentMsgs.forEach(function(m){
+        if(m.senderId && m.senderId!==me.uid && m.readBy.indexOf(me.uid)<0 && count<60){
+          var ref= currentConv.id==="sabdost" ? db.collection("messages").doc(m.id) : db.collection("chatMessages").doc(m.id);
+          batch.update(ref, { readBy: firebase.firestore.FieldValue.arrayUnion(me.uid) }); count++;
+        }
+      });
+      if(count) batch.commit().catch(function(){});
+    }
+    function clearUnread(cid){
+      var c=convsMap[cid]; if(!c || !c.unread || !c.unread[me.uid]) return;
+      var upd={}; upd["unread."+me.uid]=0;
+      db.collection("conversations").doc(cid).update(upd).catch(function(){});
+    }
+
+    /* ---------- sending ---------- */
+    function baseMsg(){
+      return { senderId:me.uid, senderName:myProfile.name||"", uid:me.uid, name:myProfile.name||"",
+        readBy:[], createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+    }
+    function afterSendPreview(textPreview, msgType){
+      if(!currentConv || currentConv.id==="sabdost") return;
+      var c=convsMap[currentConv.id]; if(!c) return;
+      var upd={ lastText:textPreview.slice(0,120), lastSenderId:me.uid, lastAt: firebase.firestore.FieldValue.serverTimestamp(), lastReadBy:[] };
+      (c.members||[]).forEach(function(u){ if(u!==me.uid) upd["unread."+u]=firebase.firestore.FieldValue.increment(1); });
+      db.collection("conversations").doc(currentConv.id).update(upd).catch(function(){});
+    }
+    function sendPayload(payload, preview){
+      if(!currentConv) return Promise.reject(new Error("no chat"));
+      var doc=Object.assign(baseMsg(), payload);
+      if(replyTo){ doc.replyTo=replyTo; }
+      var ref = currentConv.id==="sabdost"
+        ? db.collection("messages").add(doc)
+        : db.collection("chatMessages").add(Object.assign({ conversationId: currentConv.id }, doc));
+      return ref.then(function(){
+        replyTo=null; updateReplyBar();
+        afterSendPreview(preview||previewTextFor(doc), payload.type);
+        var area=$("messagesArea"); area.scrollTop=area.scrollHeight;
+      });
+    }
+    var typingTimer=null, typingState=false;
+    function setTyping(on){
+      if(!currentConv || currentConv.id==="sabdost" && false) return;
+      if(!currentConv) return;
+      if(currentConv.id==="sabdost") return;
+      if(on===typingState) return; typingState=on;
+      var upd={}; upd["typing."+me.uid]= on ? firebase.firestore.FieldValue.serverTimestamp() : null;
+      if(on){ db.collection("conversations").doc(currentConv.id).update(upd).catch(function(){}); }
+      else { var del={}; del["typing."+me.uid]=firebase.firestore.FieldValue.delete(); db.collection("conversations").doc(currentConv.id).update(del).catch(function(){}); }
+    }
+    function autoGrow(){
+      var i=$("msgInput"); i.style.height="auto"; i.style.height=Math.min(i.scrollHeight,110)+"px";
+      var has=i.value.trim().length>0;
+      $("micIcon").classList.toggle("hidden", has);
+      $("sendIcon").classList.toggle("hidden", !has);
+      $("cameraBtn").style.display= has ? "none" : "";
+    }
+    $("msgInput").addEventListener("input", function(){
+      autoGrow(); setTyping(true);
+      clearTimeout(typingTimer); typingTimer=setTimeout(function(){ setTyping(false); }, 2500);
+    });
+    $("msgInput").addEventListener("keydown", function(ev){
+      if(ev.key==="Enter" && !ev.shiftKey){ ev.preventDefault(); $("composerForm").requestSubmit(); }
+    });
+    $("composerForm").addEventListener("submit", function(ev){
+      ev.preventDefault();
+      if(recording){ stopRecording(true); return; }
+      var text=$("msgInput").value.trim();
+      if(!text){ startRecording(); return; }
+      $("msgInput").value=""; autoGrow(); setTyping(false);
+      sendPayload({ type:"text", text:text.slice(0,2000) }, text).catch(function(){ toast("Message nahi gaya — internet check karo."); });
+    });
+
+    /* ---------- emoji ---------- */
+    var EMOJIS="😀 😁 😂 🤣 😊 😍 😘 😎 🤔 😴 😢 😭 😡 👍 👎 🙏 👏 🔥 ❤️ 💔 ✨ 🎉 💯 🥰 😅 🤲 🌹 🚀 ⚽ 🏏 🍕 ☕ 🚗 ✈️ 💼 📱 💡 ✅ ❌ ⭐ 🌙 ☀️".split(" ");
+    var emojiBuilt=false;
+    $("emojiBtn").addEventListener("click", function(){
+      var p=$("emojiPanel");
+      if(!emojiBuilt){ emojiBuilt=true; EMOJIS.forEach(function(e){ var b=document.createElement("button"); b.type="button"; b.textContent=e; b.addEventListener("click", function(){ var i=$("msgInput"); i.value+=e; autoGrow(); i.focus(); }); p.appendChild(b); }); }
+      p.classList.toggle("hidden");
+    });
+
+    /* ---------- photos ---------- */
+    var photoTarget="chat";
+    function handlePhotoFile(file, target){
+      if(!file) return;
+      compressImage(file, 1200, 0.78).then(function(data){
+        if(target==="status"){ sendStatus({ type:"image", imageData:data, text:$("statusText").value.trim() }); return; }
+        pendingPhotoData=data;
+        $("photoPreview").src=data; $("photoCaption").value="";
+        $("photoModal").classList.remove("hidden");
+        setTimeout(function(){ $("photoCaption").focus(); },80);
+      }).catch(function(){ toast("Photo bohat bari hai — chhoti photo chuno."); });
+    }
+    $("attachBtn").addEventListener("click", function(){ photoTarget="chat"; $("photoInput").click(); });
+    $("cameraBtn").addEventListener("click", function(){ photoTarget="chat"; $("cameraInput").click(); });
+    $("photoInput").addEventListener("change", function(){ handlePhotoFile(this.files && this.files[0], "chat"); this.value=""; });
+    $("cameraInput").addEventListener("change", function(){ handlePhotoFile(this.files && this.files[0], "chat"); this.value=""; });
+    $("photoCancel").addEventListener("click", function(){ $("photoModal").classList.add("hidden"); pendingPhotoData=""; });
+    $("photoSend").addEventListener("click", function(){
+      if(!pendingPhotoData) return;
+      var cap=$("photoCaption").value.trim();
+      var data=pendingPhotoData; pendingPhotoData="";
+      $("photoModal").classList.add("hidden");
+      sendPayload({ type:"image", imageData:data, text:cap.slice(0,300) }, "📷 Photo"+(cap?" — "+cap:"")).catch(function(){ toast("Photo nahi gayi — internet check karo."); });
+    });
+
+    /* ---------- voice messages ---------- */
+    var mediaRecorder=null, recChunks=[], recording=false, recStart=0, recTimer=null, recStream=null, recCancelled=false;
+    function fmtDur(ms){ var s=Math.floor(ms/1000); return Math.floor(s/60)+":"+("0"+(s%60)).slice(-2); }
+    function startRecording(){
+      if(recording) return;
+      if(!navigator.mediaDevices || !window.MediaRecorder){ toast("Is browser mein voice recording support nahi hai."); return; }
+      navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+        recStream=stream; recChunks=[]; recCancelled=false;
+        var mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : (MediaRecorder.isTypeSupported("audio/mp4") ? "audio/mp4" : "");
+        mediaRecorder= mime ? new MediaRecorder(stream, { mimeType:mime }) : new MediaRecorder(stream);
+        mediaRecorder.ondataavailable=function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+        mediaRecorder.onstop=onRecStop;
+        mediaRecorder.start(250);
+        recording=true; recStart=Date.now();
+        $("composerPill").classList.add("hidden"); $("recBar").classList.remove("hidden");
+        $("recTime").textContent="0:00";
+        recTimer=setInterval(function(){ var el=Date.now()-recStart; $("recTime").textContent=fmtDur(el); if(el>118000) stopRecording(true); }, 250);
+      }).catch(function(){ toast("Mic ki ijazat chahiye — browser settings mein mic allow karo."); });
+    }
+    function stopRecording(send){
+      if(!recording || !mediaRecorder) return;
+      recCancelled=!send;
+      try{ mediaRecorder.stop(); }catch(e){ onRecStop(); }
+    }
+    function onRecStop(){
+      recording=false;
+      clearInterval(recTimer);
+      if(recStream){ recStream.getTracks().forEach(function(t){ t.stop(); }); recStream=null; }
+      $("recBar").classList.add("hidden"); $("composerPill").classList.remove("hidden");
+      if(recCancelled){ recChunks=[]; return; }
+      var type=(mediaRecorder && mediaRecorder.mimeType) || "audio/webm";
+      var blob=new Blob(recChunks, { type:type }); recChunks=[];
+      if(!blob.size){ toast("Recording khaali thi."); return; }
+      blobToDataURL(blob).then(function(data){
+        if(data.length>920000){ toast("Voice message bohat lamba hai — 2 minute se kam rakho."); return; }
+        sendPayload({ type:"audio", audioData:data, audioType:type, text:"" }, "🎤 Voice message").catch(function(){ toast("Voice message nahi gaya."); });
+      });
+    }
+    $("recCancel").addEventListener("click", function(){ stopRecording(false); });
+
+    /* ---------- statuses ---------- */
+    function updateMyStatusRow(){
+      if(!myProfile) return;
+      setAvatarEl($("myStatusAvatar"), myProfile.name||"", myProfile.avatar||"");
+      var mine=(window.__statuses||[]).filter(function(s){ return s.userId===me.uid; });
+      $("myStatusSub").textContent= mine.length ? (timeAgo(mine[0].createdAt) + " • " + mine.length + " status") : "Tap karo — status lagao";
+    }
+    function openStatusModal(){ $("statusModal").classList.remove("hidden"); setTimeout(function(){ $("statusText").focus(); },80); }
+    $("myStatusRow").addEventListener("click", function(){
+      var mine=(window.__statuses||[]).filter(function(s){ return s.userId===me.uid; });
+      if(mine.length){ viewStatus(mine[0]); } else openStatusModal();
+    });
+    $("statusCancel").addEventListener("click", function(){ $("statusModal").classList.add("hidden"); });
+    $("statusPhotoBtn").addEventListener("click", function(){ $("statusPhotoInput").click(); });
+    $("statusPhotoInput").addEventListener("change", function(){ handlePhotoFile(this.files && this.files[0], "status"); this.value=""; });
+    $("statusSendBtn").addEventListener("click", function(){
+      var t=$("statusText").value.trim();
+      if(!t){ toast("Status mein kuch likho, ya photo lagao."); return; }
+      sendStatus({ type:"text", text:t });
+    });
+    var STATUS_BGS=["#075e54","#128c7e","#6b4fbb","#c2185b","#1565c0","#b3541e","#37474f"];
+    function sendStatus(payload){
+      var doc={ userId:me.uid, userName:myProfile.name||"", avatar:myProfile.avatar||"",
+        type:payload.type, text:payload.text||"", imageData:payload.imageData||"",
+        bg:STATUS_BGS[Math.floor(Math.random()*STATUS_BGS.length)],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expiresAt: new Date(Date.now()+24*3600*1000) };
+      db.collection("statuses").add(doc).then(function(){
+        $("statusModal").classList.add("hidden"); $("statusText").value="";
+        toast("Status lag gaya — 24 ghante rahe ga.");
+      }).catch(function(){ toast("Status nahi laga — internet check karo."); });
+    }
+    function renderStatuses(){
+      var listEl=$("statusList"); if(!listEl || !me) return;
+      updateMyStatusRow();
+      var others=(window.__statuses||[]).filter(function(s){ return s.userId!==me.uid; });
+      var byUser={};
+      others.forEach(function(s){ if(!byUser[s.userId]) byUser[s.userId]=s; });
+      var arr=Object.keys(byUser).map(function(k){ return byUser[k]; });
+      if(!arr.length){ listEl.innerHTML='<div class="empty-note">Abhi kisi ka status nahi hai.</div>'; $("recentLabel").classList.add("hidden"); return; }
+      $("recentLabel").classList.remove("hidden");
+      listEl.innerHTML="";
+      arr.forEach(function(s){
+        var row=document.createElement("div"); row.className="status-row";
+        row.innerHTML='<span class="ring-wrap">'+avatarHTML(s.userName||"Dost", s.avatar||"", "a49")+'</span><div><div class="nm"></div><div class="tm"></div></div>';
+        row.querySelector(".nm").textContent=s.userName||"Dost";
+        row.querySelector(".tm").textContent=timeAgo(s.createdAt);
+        row.addEventListener("click", function(){ viewStatus(s); });
+        listEl.appendChild(row);
+      });
+    }
+    var statusTimerInt=null, statusProgInt=null;
+    function viewStatus(s){
+      $("statusView").classList.remove("hidden");
+      setAvatarEl($("statusViewAvatar"), s.userName||"", s.avatar||"");
+      $("statusViewName").textContent=s.userName||"Dost";
+      $("statusViewTime").textContent=timeAgo(s.createdAt);
+      var body=$("statusBody"); body.innerHTML="";
+      if(s.type==="image" && s.imageData){ var im=document.createElement("img"); im.src=s.imageData; im.alt="Status photo"; body.appendChild(im); if(s.text){ var cp=document.createElement("div"); cp.style.cssText="position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:16px;text-shadow:0 1px 6px #000;padding:0 18px;"; cp.textContent=s.text; body.appendChild(cp); } }
+      else { var dv=document.createElement("div"); dv.className="s-text"; dv.style.background=s.bg||"#075e54"; dv.textContent=s.text||""; body.appendChild(dv); }
+      var prog=$("statusProg"); prog.style.width="0%";
+      var startT=Date.now();
+      clearInterval(statusProgInt);
+      statusProgInt=setInterval(function(){ var p=Math.min(100, (Date.now()-startT)/50); prog.style.width=p+"%"; if(p>=100) closeStatusView(); }, 50);
+    }
+    function closeStatusView(){ clearInterval(statusProgInt); $("statusView").classList.add("hidden"); }
+    $("statusClose").addEventListener("click", closeStatusView);
+    $("statusView").addEventListener("click", function(ev){ if(ev.target===this || ev.target===$("statusBody")) closeStatusView(); });
+
+    /* ---------- profile modal ---------- */
+    function openProfileModal(){
+      editPhotoData=null;
+      setAvatarEl($("editAvatar"), myProfile.name||"", myProfile.avatar||"");
+      $("editName").value=myProfile.name||"";
+      $("editPhone").value=myProfile.phone || (me.phoneNumber||"");
+      $("profileModal").classList.remove("hidden");
+    }
+    $("editPhotoBtn").addEventListener("click", function(){ $("profilePhotoInput").click(); });
+    $("profileCancel").addEventListener("click", function(){ $("profileModal").classList.add("hidden"); });
+    $("profileLogout").addEventListener("click", function(){ $("profileModal").classList.add("hidden"); doLogout(); });
+    $("profileSave").addEventListener("click", function(){
+      var nm=$("editName").value.trim();
+      if(!nm){ toast("Naam khaali nahi ho sakta."); return; }
+      var upd={ name:nm.slice(0,30) }; if(editPhotoData) upd.avatar=editPhotoData;
+      db.collection("users").doc(me.uid).set(upd, {merge:true}).then(function(){
+        myProfile=Object.assign({}, myProfile, upd);
+        try{ localStorage.setItem("mujuchat_name", upd.name); }catch(e){}
+        $("profileModal").classList.add("hidden"); toast("Profile save ho gayi.");
+      }).catch(function(){ toast("Save nahi hua — internet check karo."); });
+    });
+
+    /* ---------- call history tab ---------- */
+    function renderCallHistory(list){
+      var el=$("callList"); if(!el) return;
+      if(!list.length){ el.innerHTML='<div class="empty-note"><span class="big-ic">📞</span>Abhi koi call history nahi hai.<br/>Kisi chat mein ja kar call karo.</div>'; return; }
+      el.innerHTML="";
+      list.forEach(function(c){
+        var outgoing=c.callerId===me.uid;
+        var otherName= outgoing ? (c.calleeName||"Dost") : (c.callerName||"Dost");
+        var otherUid= outgoing ? c.calleeId : c.callerId;
+        var ou=usersMap[otherUid]||{};
+        var missed=(c.status==="rejected") || (c.status==="ended" && !c.answeredAt && !outgoing);
+        var row=document.createElement("div"); row.className="chat-row";
+        row.innerHTML=avatarHTML(otherName, ou.avatar||"", "a49")+
+          '<div class="mid"><div class="top-line"><div class="nm"></div><div class="tm">'+esc(fmtListTime(c.createdAt))+'</div></div>'+
+          '<div class="preview"><span class="call-ic'+(missed?" missed":"")+'" style="font-size:14px;">'+(outgoing?"↗":"↙")+' '+(c.kind==="video"?"🎥":"📞")+'</span><span class="pv"></span></div></div>'+
+          '<span class="call-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.4 11.4 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.57 1 1 0 0 1-.25 1.02l-2.2 2.2z"/></svg></span>';
+        row.querySelector(".nm").textContent=otherName;
+        row.querySelector(".pv").textContent= (outgoing?"Outgoing":"Incoming") + " • " + (c.status==="ended" ? (c.durationText||"Call khatam") : c.status==="rejected" ? "Reject / Missed" : c.status);
+        row.addEventListener("click", function(){ if(otherUid) openPrivateChat(otherUid); });
+        el.appendChild(row);
+      });
+    }
+
+    /* ---------- WebRTC calls ---------- */
+    var pc=null, localStream=null, activeCall=null, callDocUnsub=null, callTimerInt=null, callStartAt=0, callLogged=false, seenCallerCands=0, seenCalleeCands=0, micOn=true, camOn=true;
+    var RTC_CFG={ iceServers:[ {urls:"stun:stun.l.google.com:19302"}, {urls:"stun:stun1.l.google.com:19302"} ] };
+    $("voiceCallBtn").addEventListener("click", function(){ startCall("voice"); });
+    $("videoCallBtn").addEventListener("click", function(){ startCall("video"); });
+    function peerUid(){ return currentConv ? otherUidOf(currentConv) : (activeCall ? (activeCall.callerId===me.uid ? activeCall.calleeId : activeCall.callerId) : null); }
+    function getMedia(kind){
+      var cons= kind==="video" ? { audio:true, video:{ facingMode:"user" } } : { audio:true, video:false };
+      return navigator.mediaDevices.getUserMedia(cons);
+    }
+    function setupPC(isCaller){
+      pc=new RTCPeerConnection(RTC_CFG);
+      seenCallerCands=0; seenCalleeCands=0;
+      if(localStream) localStream.getTracks().forEach(function(t){ pc.addTrack(t, localStream); });
+      pc.ontrack=function(ev){ var rv=$("remoteVideo"); if(ev.streams && ev.streams[0]) rv.srcObject=ev.streams[0]; };
+      pc.onicecandidate=function(ev){
+        if(!ev.candidate || !activeCall) return;
+        var field= isCaller ? "callerCandidates" : "calleeCandidates";
+        var upd={}; upd[field]=firebase.firestore.FieldValue.arrayUnion(JSON.stringify(ev.candidate.toJSON()));
+        db.collection("calls").doc(activeCall.id).update(upd).catch(function(){});
+      };
+    }
+    function applyCandidates(list, fromCaller){
+      var seen= fromCaller ? seenCallerCands : seenCalleeCands;
+      if(!list || !pc) return;
+      for(var i=seen;i<list.length;i++){
+        try{ pc.addIceCandidate(new RTCIceCandidate(JSON.parse(list[i]))); }catch(e){}
+      }
+      if(fromCaller) seenCallerCands=list.length; else seenCalleeCands=list.length;
+    }
+    function showCallScreen(kind, name, photo){
+      $("callScreen").classList.remove("hidden");
+      setAvatarEl($("callAvatar"), name||"", photo||"");
+      $("callName").textContent=name||"Dost";
+      $("callState").textContent= kind==="video" ? "Video call…" : "Voice call…";
+      var isVideo=kind==="video";
+      $("callVideos").classList.toggle("hidden", !isVideo);
+      $("callTopInfo").classList.toggle("hidden", isVideo);
+      $("callSpacer").classList.toggle("hidden", isVideo);
+      $("toggleCamBtn").classList.toggle("hidden", !isVideo);
+      if(isVideo && localStream) $("localVideo").srcObject=localStream;
+    }
+    function startCall(kind){
+      if(!currentConv || currentConv.type!=="private"){ toast("Call sirf private chat mein hoti hai."); return; }
+      var ouid=otherUidOf(currentConv); var ou=usersMap[ouid]||{};
+      if(!navigator.mediaDevices || !window.RTCPeerConnection){ toast("Is browser mein call support nahi hai."); return; }
+      callLogged=false;
+      getMedia(kind).then(function(stream){
+        localStream=stream; micOn=true; camOn=true;
+        var doc={ callerId:me.uid, callerName:myProfile.name||"", calleeId:ouid, calleeName:ou.name||"",
+          conversationId:currentConv.id, kind:kind, status:"ringing",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(), callerCandidates:[], calleeCandidates:[] };
+        db.collection("calls").add(doc).then(function(ref){
+          activeCall=Object.assign({ id:ref.id }, doc);
+          showCallScreen(kind, ou.name||"Dost", ou.avatar||"");
+          $("callState").textContent="Calling… ghanti ja rahi hai";
+          setupPC(true);
+          pc.createOffer().then(function(offer){ return pc.setLocalDescription(offer); }).then(function(){
+            return ref.update({ offer:{ type:pc.localDescription.type, sdp:pc.localDescription.sdp } });
+          }).catch(function(){});
+          watchCallDoc(ref.id, true);
+        }).catch(function(){ cleanupCallMedia(); toast("Call nahi lagi — internet check karo."); });
+      }).catch(function(){ toast("Mic/camera ki ijazat chahiye — browser mein allow karo."); });
+    }
+    function watchCallDoc(callId, isCaller){
+      if(callDocUnsub) callDocUnsub();
+      callDocUnsub=db.collection("calls").doc(callId).onSnapshot(function(snap){
+        if(!snap.exists) return;
+        var d=snap.data(); if(activeCall) activeCall=Object.assign({}, activeCall, d, { id:callId });
+        if(isCaller){
+          if(d.answer && pc && !pc.currentRemoteDescription){
+            pc.setRemoteDescription(new RTCSessionDescription(d.answer)).catch(function(){});
+          }
+          applyCandidates(d.calleeCandidates, false);
+        } else {
+          applyCandidates(d.callerCandidates, true);
+        }
+        if(d.status==="accepted"){
+          $("callState").textContent="Connected";
+          if(!callStartAt){ callStartAt=Date.now(); startCallTimer(); }
+        }
+        if(d.status==="rejected" || d.status==="ended"){
+          var wasConnected=!!callStartAt;
+          finishCallUI(d.status==="rejected" ? "Call reject ho gayi" : "Call khatam");
+          if(isCaller && !callLogged){
+            callLogged=true;
+            logCallToChat(d.kind, d.status, wasConnected ? (Date.now()-callStartAt) : 0);
+          }
+        }
+      }, function(){});
+    }
+    function startCallTimer(){
+      clearInterval(callTimerInt);
+      callTimerInt=setInterval(function(){
+        if(callStartAt) $("callState").textContent=fmtDur(Date.now()-callStartAt);
+      }, 1000);
+    }
+    function logCallToChat(kind, status, durMs){
+      if(!activeCall || !activeCall.conversationId) return;
+      var label;
+      if(status==="rejected") label=(kind==="video"?"Video call":"Voice call")+" — koi jawab nahi / reject";
+      else if(durMs>0) label=(kind==="video"?"Video call":"Voice call")+" • "+fmtDur(durMs);
+      else label=(kind==="video"?"Video call":"Voice call")+" — khatam";
+      var doc=Object.assign(baseMsg(), { type:"call", text:label, conversationId:activeCall.conversationId });
+      db.collection("chatMessages").add(doc).catch(function(){});
+      if(activeCall.conversationId && convsMap[activeCall.conversationId]){
+        db.collection("conversations").doc(activeCall.conversationId).update({ lastText:"📞 "+label, lastSenderId:me.uid, lastAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(function(){});
+      }
+    }
+    function cleanupCallMedia(){
+      clearInterval(callTimerInt); callStartAt=0;
+      if(callDocUnsub){ try{callDocUnsub();}catch(e){} callDocUnsub=null; }
+      if(pc){ try{pc.close();}catch(e){} pc=null; }
+      if(localStream){ localStream.getTracks().forEach(function(t){ t.stop(); }); localStream=null; }
+      $("remoteVideo").srcObject=null; $("localVideo").srcObject=null;
+    }
+    function finishCallUI(msg){
+      cleanupCallMedia();
+      activeCall=null;
+      $("callScreen").classList.add("hidden");
+      $("incomingScreen").classList.add("hidden");
+      if(msg) toast(msg);
+    }
+    $("endCallBtn").addEventListener("click", function(){
+      if(!activeCall){ finishCallUI(""); return; }
+      var id=activeCall.id; var isCaller=activeCall.callerId===me.uid;
+      var wasConnected=!!callStartAt; var dur=wasConnected?(Date.now()-callStartAt):0; var kind=activeCall.kind;
+      db.collection("calls").doc(id).update({ status:"ended", endedAt: firebase.firestore.FieldValue.serverTimestamp(), durationText: dur?fmtDur(dur):"" }).catch(function(){});
+      if(isCaller && !callLogged){ callLogged=true; logCallToChat(kind, "ended", dur); }
+      finishCallUI("Call khatam ho gayi");
+    });
+    $("toggleMicBtn").addEventListener("click", function(){
+      if(!localStream) return; micOn=!micOn;
+      localStream.getAudioTracks().forEach(function(t){ t.enabled=micOn; });
+      $("toggleMicBtn").classList.toggle("off", !micOn);
+    });
+    $("toggleCamBtn").addEventListener("click", function(){
+      if(!localStream) return; camOn=!camOn;
+      localStream.getVideoTracks().forEach(function(t){ t.enabled=camOn; });
+      $("toggleCamBtn").classList.toggle("off", !camOn);
+    });
+
+    /* ---------- incoming calls ---------- */
+    var incomingCall=null;
+    function listenIncomingCalls(){
+      unsubs.push(db.collection("calls").where("calleeId","==", me.uid).where("status","==","ringing").limit(5).onSnapshot(function(snap){
+        if(incomingCall || activeCall) { if(snap.docs.length && !incomingCall && !activeCall){ /* busy */ } else return; }
+        if(!snap.docs.length) return;
+        var d=snap.docs[0]; var data=Object.assign({ id:d.id }, d.data());
+        if(!data.offer) return;
+        incomingCall=data;
+        var cu=usersMap[data.callerId]||{};
+        setAvatarEl($("incomingAvatar"), data.callerName||cu.name||"", cu.avatar||"");
+        $("incomingName").textContent=data.callerName||cu.name||"Dost";
+        $("incomingKind").textContent= data.kind==="video" ? "video call" : "voice call";
+        $("incomingPhone").textContent=cu.phone||"";
+        $("incomingScreen").classList.remove("hidden");
+      }, function(){}));
+    }
+    $("rejectCallBtn").addEventListener("click", function(){
+      if(!incomingCall) return;
+      var id=incomingCall.id; incomingCall=null;
+      $("incomingScreen").classList.add("hidden");
+      db.collection("calls").doc(id).update({ status:"rejected" }).catch(function(){});
+    });
+    $("acceptCallBtn").addEventListener("click", function(){
+      if(!incomingCall) return;
+      var data=incomingCall; incomingCall=null;
+      $("incomingScreen").classList.add("hidden");
+      callLogged=false;
+      getMedia(data.kind).then(function(stream){
+        localStream=stream; micOn=true; camOn=true;
+        activeCall=data;
+        var cu=usersMap[data.callerId]||{};
+        showCallScreen(data.kind, data.callerName||cu.name||"Dost", cu.avatar||"");
+        $("callState").textContent="Connecting…";
+        setupPC(false);
+        pc.setRemoteDescription(new RTCSessionDescription(data.offer)).then(function(){
+          return pc.createAnswer();
+        }).then(function(ans){ return pc.setLocalDescription(ans); }).then(function(){
+          return db.collection("calls").doc(data.id).update({ answer:{ type:pc.localDescription.type, sdp:pc.localDescription.sdp }, status:"accepted", answeredAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }).then(function(){
+          watchCallDoc(data.id, false);
+        }).catch(function(){ toast("Call connect nahi hui."); finishCallUI(""); });
+        watchCallDoc(data.id, false);
+      }).catch(function(){ toast("Mic/camera ki ijazat chahiye."); db.collection("calls").doc(data.id).update({ status:"rejected" }).catch(function(){}); });
+    });
+
+    /* ---------- boot ---------- */
+    if(!initFirebase()){
+      /* firebase failed */
+    } else {
+      auth.onAuthStateChanged(function(user){
+        if(user){ onSignedIn(user); }
+        else { me=null; myProfile=null; showOnly("screenLogin"); }
+      }, function(){ showOnly("screenLogin"); });
+    }
+  })();
+  </script>
+</body>
 </html>
