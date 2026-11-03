@@ -947,13 +947,23 @@
             }
           }
           if(typeof SET!=="undefined" && SET.sound && data.lastSenderId && data.lastSenderId!==me.uid && prevMs && typeof ms!=="undefined" && ms && ms>prevMs && !(currentConv && currentConv.id===d.id)) beep();
+          if(window.MujuBridge && document.visibilityState==="hidden" && data.lastSenderId && data.lastSenderId!==me.uid && prevMs && typeof ms!=="undefined" && ms && ms>prevMs){
+            var nTitle = data.type==="group" ? (data.name||"Group") : ((data.names && data.names[data.lastSenderId]) || "MujuChat dost");
+            try{ MujuBridge.notify(d.id, nTitle, (data.lastText||"Naya message").slice(0,120), ms); }catch(e){}
+          }
         });
         renderChatList();
         if(currentConv && convsMap[currentConv.id]){ currentConv=convsMap[currentConv.id]; updateChatHeader(); if(openDelivChanged) renderMessages(); }
       }, function(){ /* conversations query fail — list phir bhi Sab Dost dikhaye ga */ }));
       /* Sab Dost last message (legacy collection) */
       unsubs.push(db.collection("messages").orderBy("createdAt","asc").limitToLast(1).onSnapshot(function(snap){
+        var prevSab = sabLast;
         sabLast = snap.docs.length ? Object.assign({id:snap.docs[0].id}, snap.docs[0].data()) : null;
+        if(window.MujuBridge && document.visibilityState==="hidden" && sabLast && prevSab && sabLast.id!==prevSab.id && sabLast.uid && sabLast.uid!==me.uid && !sabLast.deleted){
+          var sabBody = (sabLast.name||"Dost") + ": " + (sabLast.type==="image" ? "📷 Photo" : (sabLast.type==="audio" ? "🎤 Voice message" : (sabLast.viewOnce ? "🔒 View Once" : (sabLast.text||"Naya message"))));
+          var sabAt = toDate(sabLast.createdAt);
+          try{ MujuBridge.notify("sabdost", "Sab Dost", String(sabBody).slice(0,120), sabAt ? sabAt.getTime() : Date.now()); }catch(e){}
+        }
         renderChatList();
       }, function(){}));
       /* statuses */
