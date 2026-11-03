@@ -43,13 +43,10 @@
       .field{width:100%;text-align:left;margin-bottom:14px;}
       .field label{display:block;font-size:12.5px;color:var(--teal);font-weight:600;margin-bottom:5px;letter-spacing:.02em;}
       @media (prefers-color-scheme: dark){.field label{color:var(--green-bright);}}
-      .field select,.field input[type=tel],.field input[type=text]{
+      .field select,.field input[type=tel],.field input[type=text],.field input[type=email],.field input[type=password]{
         width:100%;border:none;border-bottom:2px solid var(--teal);background:transparent;color:var(--text);
         font-size:16.5px;padding:8px 2px;outline:none;border-radius:0;
       }
-      .phone-row{display:flex;gap:12px;width:100%;}
-      .phone-code{flex:0 0 86px;}
-      .phone-num{flex:1 1 auto;}
       .btn-green{
         background:var(--green);color:#fff;border:none;border-radius:24px;padding:12px 34px;font-size:15.5px;
         font-weight:600;box-shadow:0 1px 3px var(--shadow);margin-top:14px;min-width:150px;
@@ -58,7 +55,12 @@
       .btn-green:active{transform:scale(.98);}
       .link-btn{background:none;border:none;color:var(--teal);font-size:14.5px;font-weight:600;padding:8px;}
       @media (prefers-color-scheme: dark){.link-btn{color:var(--green-bright);}}
-      .otp-input{letter-spacing:10px;text-align:center;font-size:24px !important;font-weight:600;}
+      .auth-tabs{display:flex;background:var(--panel-2);border-radius:24px;padding:4px;width:100%;margin-bottom:22px;}
+      .auth-tabs button{flex:1;border:none;background:transparent;color:var(--text-soft);font-size:15px;font-weight:600;padding:9px 0;border-radius:20px;}
+      .auth-tabs button.active{background:var(--green);color:#fff;box-shadow:0 1px 3px var(--shadow);}
+      .form-ok{display:none;width:100%;background:#e5f6ec;color:#0b5d3b;border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-top:14px;text-align:left;}
+      .form-ok.show{display:block;}
+      @media (prefers-color-scheme: dark){.form-ok{background:#0f3d31;color:#8fe3bb;}}
       .form-error{display:none;width:100%;background:#fdecea;color:#8f1d13;border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-top:14px;text-align:left;}
       .form-error.show{display:block;}
       @media (prefers-color-scheme: dark){.form-error{background:#3b1d1a;color:#f2a49d;}}
@@ -241,47 +243,37 @@
   </head>
 <body>
 
-  <!-- ============ LOGIN: phone number ============ -->
+  <!-- ============ LOGIN: email / password ============ -->
   <section class="screen" id="screenLogin">
     <div class="welcome-wrap">
       <div class="logo-circle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"/></svg></div>
       <h1>MujuChat mein khush amdeed</h1>
-      <p>Apna phone number confirm karo. Tumhare number par SMS se 6-digit code bheja jaye ga — wahi tumhara login hai, koi password nahi.</p>
-      <div class="field">
-        <label for="countrySelect">Country / Mulk</label>
-        <select id="countrySelect" aria-label="Country chuno"></select>
+      <p>Apne email aur password se login karo. Naye ho to pehle account banao — bilkul free hai, koi SMS code nahi chahiye.</p>
+      <div class="auth-tabs">
+        <button type="button" id="tabLogin" class="active">Login</button>
+        <button type="button" id="tabSignup">Account banao</button>
       </div>
-      <div class="phone-row">
-        <div class="field phone-code">
-          <label for="dialCode">Code</label>
-          <input type="text" id="dialCode" readonly aria-label="Dialing code" />
-        </div>
-        <div class="field phone-num">
-          <label for="phoneInput">Phone number</label>
-          <input type="tel" id="phoneInput" placeholder="300 1234567" autocomplete="tel" inputmode="tel" />
-        </div>
+      <div class="field">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" placeholder="misal: naam@gmail.com" autocomplete="email" inputmode="email" />
+      </div>
+      <div class="field">
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" placeholder="Kam az kam 6 characters" autocomplete="current-password" />
       </div>
       <div class="form-error" id="loginError" role="alert"></div>
-      <button class="btn-green" id="sendOtpBtn" type="button">Next</button>
-      <div class="hint-sm">Number bilkul sahi likho — code usi number par SMS aye ga. SMS ke charges tumhare mobile network ke hisaab se lag sakte hain.</div>
-      <div id="recaptcha-container"></div>
-    </div>
-  </section>
-
-  <!-- ============ LOGIN: OTP ============ -->
-  <section class="screen hidden" id="screenOtp">
-    <div class="welcome-wrap">
-      <div class="logo-circle" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.9 2 11.7c0 2.7 1.5 5.1 3.8 6.7-.2 1-.6 2.3-1.3 3.3 0 0 2.9-.1 4.9-1.2.8.2 1.7.3 2.6.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"/></svg></div>
-      <h1>Code likho</h1>
-      <p id="otpHint">SMS ka 6-digit code likho.</p>
-      <div class="field">
-        <input type="tel" id="otpInput" class="otp-input" maxlength="6" placeholder="------" autocomplete="one-time-code" inputmode="numeric" aria-label="6 digit code" />
+      <div class="form-ok" id="loginOk" role="status"></div>
+      <button class="btn-green" id="authSubmitBtn" type="button">Login</button>
+      <button class="link-btn" id="forgotBtn" type="button">Password bhool gaye?</button>
+      <div id="resetBox" class="hidden" style="width:100%;">
+        <div class="field" style="margin-top:10px;">
+          <label for="resetEmail">Reset ke liye email</label>
+          <input type="email" id="resetEmail" placeholder="Apna email likho" inputmode="email" />
+        </div>
+        <button class="btn-green" id="resetSendBtn" type="button" style="margin-top:2px;">Reset link bhejo</button>
+        <div class="hint-sm">Is email par password reset ka link aye ga — link par click karke naya password bana lena, phir yahan aa kar login kar lena.</div>
       </div>
-      <div class="form-error" id="otpError" role="alert"></div>
-      <button class="btn-green" id="verifyOtpBtn" type="button">Verify</button>
-      <button class="link-btn" id="resendBtn" type="button">Code dobara bhejo</button>
-      <button class="link-btn" id="changeNumberBtn" type="button">Number badlo</button>
-      <div class="hint-sm">Code aane mein 1–2 minute lag sakte hain. Signal aur number dobara check kar lo.</div>
+      <div class="hint-sm">Har banda apne email se apna alag account banata hai. Ek dafa login karne ke baad dobara login nahi karna pare ga.</div>
     </div>
   </section>
 
@@ -297,6 +289,10 @@
       <div class="field">
         <label for="setupName">Tumhara naam</label>
         <input type="text" id="setupName" maxlength="30" placeholder="Apna naam likho" autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="setupPhone">Phone number (optional)</label>
+        <input type="tel" id="setupPhone" maxlength="20" placeholder="Misal: +92 300 1234567" autocomplete="tel" />
       </div>
       <div class="form-error" id="profileError" role="alert"></div>
       <button class="btn-green" id="saveProfileBtn" type="button">Chat shuru karo</button>
@@ -459,7 +455,8 @@
         <button class="photo-cam" id="editPhotoBtn" type="button" aria-label="Photo badlo"><svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></button>
       </div>
       <div class="field"><label for="editName">Naam</label><input type="text" id="editName" maxlength="30" /></div>
-      <div class="field"><label>Phone</label><input type="text" id="editPhone" readonly /></div>
+      <div class="field"><label>Email</label><input type="text" id="editEmail" readonly /></div>
+      <div class="field"><label>Phone (optional)</label><input type="tel" id="editPhone" maxlength="20" placeholder="Phone number" /></div>
       <div style="display:flex;gap:10px;margin-top:6px;">
         <button class="link-btn" id="profileCancel" type="button" style="flex:1;">Cancel</button>
         <button class="btn-green" id="profileSave" type="button" style="flex:1;margin-top:0;">Save</button>
@@ -530,7 +527,6 @@
       appId: "1:758656659346:web:f4a25063fd1df3dbd3db4b"
     };
     var $ = function(id){ return document.getElementById(id); };
-    var COUNTRIES = ("Afghanistan|93,Albania|355,Algeria|213,American Samoa|1684,Andorra|376,Angola|244,Anguilla|1264,Antigua and Barbuda|1268,Argentina|54,Armenia|374,Aruba|297,Australia|61,Austria|43,Azerbaijan|994,Bahamas|1242,Bahrain|973,Bangladesh|880,Barbados|1246,Belarus|375,Belgium|32,Belize|501,Benin|229,Bermuda|1441,Bhutan|975,Bolivia|591,Bosnia and Herzegovina|387,Botswana|267,Brazil|55,Brunei|673,Bulgaria|359,Burkina Faso|226,Burundi|257,Cambodia|855,Cameroon|237,Canada|1,Cape Verde|238,Cayman Islands|1345,Central African Republic|236,Chad|235,Chile|56,China|86,Colombia|57,Comoros|269,Congo|242,Congo (DRC)|243,Costa Rica|506,Croatia|385,Cuba|53,Cyprus|357,Czech Republic|420,Denmark|45,Djibouti|253,Dominica|1767,Dominican Republic|1809,Ecuador|593,Egypt|20,El Salvador|503,Equatorial Guinea|240,Eritrea|291,Estonia|372,Eswatini|268,Ethiopia|251,Fiji|679,Finland|358,France|33,Gabon|241,Gambia|220,Georgia|995,Germany|49,Ghana|233,Greece|30,Greenland|299,Grenada|1473,Guam|1671,Guatemala|502,Guinea|224,Guinea-Bissau|245,Guyana|592,Haiti|509,Honduras|504,Hong Kong|852,Hungary|36,Iceland|354,India|91,Indonesia|62,Iran|98,Iraq|964,Ireland|353,Israel|972,Italy|39,Ivory Coast|225,Jamaica|1876,Japan|81,Jordan|962,Kazakhstan|7,Kenya|254,Kiribati|686,Kuwait|965,Kyrgyzstan|996,Laos|856,Latvia|371,Lebanon|961,Lesotho|266,Liberia|231,Libya|218,Liechtenstein|423,Lithuania|370,Luxembourg|352,Macao|853,Madagascar|261,Malawi|265,Malaysia|60,Maldives|960,Mali|223,Malta|356,Mauritania|222,Mauritius|230,Mexico|52,Moldova|373,Monaco|377,Mongolia|976,Montenegro|382,Montserrat|1664,Morocco|212,Mozambique|258,Myanmar|95,Namibia|264,Nepal|977,Netherlands|31,New Caledonia|687,New Zealand|64,Nicaragua|505,Niger|227,Nigeria|234,North Korea|850,North Macedonia|389,Norway|47,Oman|968,Pakistan|92,Palestine|970,Panama|507,Papua New Guinea|675,Paraguay|595,Peru|51,Philippines|63,Poland|48,Portugal|351,Puerto Rico|1787,Qatar|974,Romania|40,Russia|7,Rwanda|250,Saint Kitts and Nevis|1869,Saint Lucia|1758,Saint Vincent and the Grenadines|1784,Samoa|685,San Marino|378,Sao Tome and Principe|239,Saudi Arabia|966,Senegal|221,Serbia|381,Seychelles|248,Sierra Leone|232,Singapore|65,Slovakia|421,Slovenia|386,Solomon Islands|677,Somalia|252,South Africa|27,South Korea|82,South Sudan|211,Spain|34,Sri Lanka|94,Sudan|249,Suriname|597,Sweden|46,Switzerland|41,Syria|963,Taiwan|886,Tajikistan|992,Tanzania|255,Thailand|66,Timor-Leste|670,Togo|228,Tonga|676,Trinidad and Tobago|1868,Tunisia|216,Turkey|90,Turkmenistan|993,Uganda|256,Ukraine|380,United Arab Emirates|971,United Kingdom|44,United States|1,Uruguay|598,Uzbekistan|998,Vanuatu|678,Venezuela|58,Vietnam|84,Virgin Islands (US)|1340,Yemen|967,Zambia|260,Zimbabwe|263").split(",").map(function(s){ var p=s.split("|"); return {name:p[0], code:p[1]}; });
 
     /* ---------- state ---------- */
     var db=null, auth=null, me=null, myProfile=null;
@@ -623,76 +619,76 @@
       return true;
     }
 
-    /* ---------- country picker ---------- */
-    var countrySelect=$("countrySelect"), dialCodeInput=$("dialCode");
-    COUNTRIES.forEach(function(c){ var o=document.createElement("option"); o.value=c.code; o.textContent=c.name+" (+"+c.code+")"; o.dataset.name=c.name; countrySelect.appendChild(o); });
-    countrySelect.value="92"; dialCodeInput.value="+92";
-    countrySelect.addEventListener("change", function(){ dialCodeInput.value="+"+countrySelect.value; });
-
-    /* ---------- phone auth ---------- */
-    var recaptchaVerifier=null, otpResult=null;
-    function setupRecaptcha(){
-      if(recaptchaVerifier){ try{ recaptchaVerifier.clear(); }catch(e){} recaptchaVerifier=null; }
-      recaptchaVerifier=new firebase.auth.RecaptchaVerifier("recaptcha-container", { size:"invisible" });
-    }
+    /* ---------- email / password auth ---------- */
+    var authMode="login";
+    function formOk(msg){ var e=$("loginOk"); if(!e) return; if(!msg){ e.classList.remove("show"); e.textContent=""; return; } e.textContent=msg; e.classList.add("show"); }
     function friendlyAuthError(err){
       var code=(err && err.code) || "";
-      if(code.indexOf("too-many-requests")>=0 || code.indexOf("quota")>=0) return "Abhi SMS nahi bheja ja sakta — Firebase ki free SMS limit khatam ho sakti hai ya bohat zyada koshishain ho gayi hain. Kuch dair baad dobara koshish karo.";
-      if(code.indexOf("invalid-phone-number")>=0) return "Phone number sahi nahi hai. Country code ke saath pura number check karo.";
-      if(code.indexOf("invalid-verification-code")>=0) return "Code galat hai — SMS wala 6-digit code dobara ghoor se likho.";
-      if(code.indexOf("code-expired")>=0 || code.indexOf("session-expired")>=0) return "Code ki muddat khatam ho gayi hai. 'Code dobara bhejo' dabao.";
+      if(code.indexOf("invalid-email")>=0) return "Email sahi nahi hai — email dobara ghoor se likho (misal: naam@gmail.com).";
+      if(code.indexOf("user-not-found")>=0 || code.indexOf("invalid-credential")>=0 || code.indexOf("wrong-password")>=0) return "Email ya password galat hai. Agar account abhi nahi banaya to pehle upar 'Account banao' wala tab dabao.";
+      if(code.indexOf("email-already-in-use")>=0) return "Is email se account pehle se bana hua hai — 'Login' wala tab dabaa kar login karo.";
+      if(code.indexOf("weak-password")>=0) return "Password kamzor hai — kam az kam 6 characters ka password rakho.";
+      if(code.indexOf("user-disabled")>=0) return "Ye account band kar diya gaya hai.";
+      if(code.indexOf("too-many-requests")>=0) return "Bohat zyada galat koshishain ho gayi hain — kuch dair ruk kar dobara koshish karo.";
       if(code.indexOf("network")>=0) return "Internet ka masla hai — connection check karke dobara koshish karo.";
+      if(code.indexOf("operation-not-allowed")>=0) return "Email login abhi Firebase mein on nahi hai. Firebase Console → Authentication → Sign-in method mein 'Email/Password' enable karna hoga.";
       if(code.indexOf("unauthorized-domain")>=0) return "Ye website Firebase mein approved nahi hai. Firebase Console → Authentication → Settings → Authorized domains mein is page ka domain add karna hoga.";
-      if(code.indexOf("captcha")>=0 || code.indexOf("missing-app-credential")>=0) return "reCAPTCHA check fail ho gaya — page refresh karke dobara koshish karo.";
       return "Kuch ghalat ho gaya: " + ((err && err.message) || code || "dobara koshish karo");
     }
-    $("sendOtpBtn").addEventListener("click", function(){
-      formErr("loginError","");
-      var raw=$("phoneInput").value.replace(/[^\d]/g,"");
-      if(raw.length<6){ formErr("loginError","Sahi phone number likho (kam az kam 6 digit)."); return; }
-      var code=countrySelect.value;
-      if(code==="92" && raw.charAt(0)==="0") raw=raw.slice(1);
-      var e164="+"+code+raw;
-      var btn=$("sendOtpBtn"); btn.disabled=true; btn.textContent="Code bheja ja raha hai…";
-      try{ setupRecaptcha(); }catch(e){ btn.disabled=false; btn.textContent="Next"; formErr("loginError","reCAPTCHA load nahi hua — page refresh karo."); return; }
-      auth.signInWithPhoneNumber(e164, recaptchaVerifier).then(function(cr){
-        otpResult=cr; btn.disabled=false; btn.textContent="Next";
-        try{ localStorage.setItem("mujuchat_pending_phone", e164); }catch(e){}
-        $("otpHint").textContent="Code is number par bheja gaya hai: " + e164 + " — SMS ka 6-digit code likho.";
-        $("screenLogin").classList.add("hidden"); $("screenOtp").classList.remove("hidden");
-        setTimeout(function(){ $("otpInput").focus(); },80);
+    function setAuthMode(m){
+      authMode=m;
+      $("tabLogin").classList.toggle("active", m==="login");
+      $("tabSignup").classList.toggle("active", m==="signup");
+      $("authSubmitBtn").textContent= m==="login" ? "Login" : "Account banao";
+      $("authPassword").setAttribute("autocomplete", m==="login" ? "current-password" : "new-password");
+      $("forgotBtn").classList.toggle("hidden", m!=="login");
+      if(m==="signup") $("resetBox").classList.add("hidden");
+      formErr("loginError",""); formOk("");
+    }
+    $("tabLogin").addEventListener("click", function(){ setAuthMode("login"); });
+    $("tabSignup").addEventListener("click", function(){ setAuthMode("signup"); });
+    $("authSubmitBtn").addEventListener("click", function(){
+      formErr("loginError",""); formOk("");
+      var email=$("authEmail").value.trim();
+      var pass=$("authPassword").value;
+      if(!email || email.indexOf("@")<1 || email.indexOf(".")<0){ formErr("loginError","Sahi email likho (misal: naam@gmail.com)."); return; }
+      if(!pass){ formErr("loginError","Password likho."); return; }
+      if(authMode==="signup" && pass.length<6){ formErr("loginError","Password kam az kam 6 characters ka hona chahiye."); return; }
+      var btn=$("authSubmitBtn"); var orig=btn.textContent;
+      btn.disabled=true; btn.textContent= authMode==="login" ? "Login ho raha hai…" : "Account ban raha hai…";
+      var p= authMode==="login" ? auth.signInWithEmailAndPassword(email, pass) : auth.createUserWithEmailAndPassword(email, pass);
+      p.then(function(){
+        btn.disabled=false; btn.textContent=orig;
+        /* onAuthStateChanged aage sambhale ga */
       }).catch(function(err){
-        btn.disabled=false; btn.textContent="Next";
+        btn.disabled=false; btn.textContent=orig;
         formErr("loginError", friendlyAuthError(err));
       });
     });
-    $("verifyOtpBtn").addEventListener("click", function(){
-      formErr("otpError","");
-      var codeIn=$("otpInput").value.replace(/[^\d]/g,"");
-      if(codeIn.length!==6){ formErr("otpError","Poora 6-digit code likho."); return; }
-      if(!otpResult){ formErr("otpError","Pehle number par code bhejo — 'Number badlo' dabaa kar dobara shuru karo."); return; }
-      var btn=$("verifyOtpBtn"); btn.disabled=true; btn.textContent="Check ho raha hai…";
-      var confirmOtp=otpResult.confirm.bind(otpResult);
-      confirmOtp(codeIn).then(function(){
-        btn.disabled=false; btn.textContent="Verify";
-        /* onAuthStateChanged aage sambhale ga */
+    $("authPassword").addEventListener("keydown", function(ev){
+      if(ev.key==="Enter"){ ev.preventDefault(); $("authSubmitBtn").click(); }
+    });
+    $("forgotBtn").addEventListener("click", function(){
+      var box=$("resetBox"); box.classList.toggle("hidden");
+      if(!box.classList.contains("hidden")){ $("resetEmail").value=$("authEmail").value.trim(); setTimeout(function(){ $("resetEmail").focus(); },60); }
+    });
+    $("resetSendBtn").addEventListener("click", function(){
+      formErr("loginError",""); formOk("");
+      var email=$("resetEmail").value.trim() || $("authEmail").value.trim();
+      if(!email || email.indexOf("@")<1){ formErr("loginError","Reset ke liye pehle apna sahi email likho."); return; }
+      var btn=$("resetSendBtn"); btn.disabled=true; btn.textContent="Bheja ja raha hai…";
+      auth.sendPasswordResetEmail(email).then(function(){
+        btn.disabled=false; btn.textContent="Reset link bhejo";
+        formOk("Reset link is email par bhej diya gaya hai: " + email + " — email khol kar link se naya password banao, phir yahan login karo.");
       }).catch(function(err){
-        btn.disabled=false; btn.textContent="Verify";
-        formErr("otpError", friendlyAuthError(err));
+        btn.disabled=false; btn.textContent="Reset link bhejo";
+        formErr("loginError", friendlyAuthError(err));
       });
-    });
-    $("resendBtn").addEventListener("click", function(){
-      $("screenOtp").classList.add("hidden"); $("screenLogin").classList.remove("hidden");
-      formErr("loginError",""); toast("Number check karke Next dabao — naya code bheja jaye ga.");
-    });
-    $("changeNumberBtn").addEventListener("click", function(){
-      otpResult=null; $("otpInput").value="";
-      $("screenOtp").classList.add("hidden"); $("screenLogin").classList.remove("hidden");
     });
 
     /* ---------- auth state / presence ---------- */
     function showOnly(id){
-      ["screenLogin","screenOtp","screenProfile"].forEach(function(s){ $(s).classList.toggle("hidden", s!==id); });
+      ["screenLogin","screenProfile"].forEach(function(s){ $(s).classList.toggle("hidden", s!==id); });
       $("mainApp").classList.toggle("hidden", !!id);
       if(id){ $("chatScreen").classList.add("hidden"); }
     }
@@ -722,7 +718,7 @@
           if(setupPhotoData) setAvatarEl($("setupAvatar"), "", setupPhotoData);
           var saved=""; try{ saved=localStorage.getItem("mujuchat_name")||""; }catch(e){}
           if(saved) $("setupName").value=saved;
-          uref.set({ phone:user.phoneNumber||"", createdAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true}).catch(function(){});
+          uref.set({ email:user.email||"", createdAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true}).catch(function(){});
           showOnly("screenProfile");
         }
       }).catch(function(){ showOnly("screenProfile"); });
@@ -742,7 +738,8 @@
       var nm=$("setupName").value.trim();
       if(!nm){ formErr("profileError","Apna naam likho — yehi naam sab ko nazar aye ga."); return; }
       var btn=$("saveProfileBtn"); btn.disabled=true; btn.textContent="Save ho raha hai…";
-      var doc={ name:nm.slice(0,30), phone:(me && me.phoneNumber)||"", online:true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
+      var ph=$("setupPhone").value.trim();
+      var doc={ name:nm.slice(0,30), email:(me && me.email)||"", phone:ph.slice(0,20), online:true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
       if(setupPhotoData) doc.avatar=setupPhotoData;
       db.collection("users").doc(me.uid).set(doc, {merge:true}).then(function(){
         btn.disabled=false; btn.textContent="Chat shuru karo";
@@ -1387,7 +1384,8 @@
       editPhotoData=null;
       setAvatarEl($("editAvatar"), myProfile.name||"", myProfile.avatar||"");
       $("editName").value=myProfile.name||"";
-      $("editPhone").value=myProfile.phone || (me.phoneNumber||"");
+      $("editEmail").value=myProfile.email || (me && me.email) || "";
+      $("editPhone").value=myProfile.phone || "";
       $("profileModal").classList.remove("hidden");
     }
     $("editPhotoBtn").addEventListener("click", function(){ $("profilePhotoInput").click(); });
@@ -1396,7 +1394,7 @@
     $("profileSave").addEventListener("click", function(){
       var nm=$("editName").value.trim();
       if(!nm){ toast("Naam khaali nahi ho sakta."); return; }
-      var upd={ name:nm.slice(0,30) }; if(editPhotoData) upd.avatar=editPhotoData;
+      var upd={ name:nm.slice(0,30), phone:$("editPhone").value.trim().slice(0,20) }; if(editPhotoData) upd.avatar=editPhotoData;
       db.collection("users").doc(me.uid).set(upd, {merge:true}).then(function(){
         myProfile=Object.assign({}, myProfile, upd);
         try{ localStorage.setItem("mujuchat_name", upd.name); }catch(e){}
