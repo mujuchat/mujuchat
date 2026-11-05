@@ -840,6 +840,35 @@
     function bridgeClear(){
       try{ if(window.MujuBridge) MujuBridge.clearUser(); }catch(e){}
     }
+    /* ---------- FCM token (v1.3 APK: asal push notifications ke liye) ---------- */
+    var fcmSavedKey="";
+    function saveFcmToken(t){
+      try{
+        if(!t || !db || !me) return;
+        var key=me.uid+"|"+t;
+        if(key===fcmSavedKey) return;
+        fcmSavedKey=key;
+        db.collection("users").doc(me.uid).set({ fcmToken:String(t), fcmTokenAt: firebase.firestore.FieldValue.serverTimestamp() }, {merge:true}).catch(function(){});
+      }catch(e){}
+    }
+    window.onMujuFcmToken=function(t){
+      try{ saveFcmToken(t); }catch(e){}
+    };
+    function pullFcmToken(){
+      try{
+        if(window.MujuBridge && typeof MujuBridge.getFcmToken==="function"){
+          var t=MujuBridge.getFcmToken();
+          if(t) saveFcmToken(t);
+        }
+      }catch(e){}
+    }
+    function clearFcmToken(){
+      try{
+        if(!db || !me) return;
+        fcmSavedKey="";
+        db.collection("users").doc(me.uid).set({ fcmToken: firebase.firestore.FieldValue.delete() }, {merge:true}).catch(function(){});
+      }catch(e){}
+    }
     function setPresence(online){
       if(!db || !me) return;
       var upd={ online:!!online, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
@@ -860,6 +889,7 @@
           myProfile=data;
           try{ localStorage.setItem("mujuchat_name", data.name); }catch(e){}
           bridgeSync();
+          pullFcmToken();
           enterApp();
         } else {
           myProfile=data||{};
@@ -895,10 +925,12 @@
         myProfile=Object.assign({}, myProfile, doc);
         try{ localStorage.setItem("mujuchat_name", doc.name); }catch(e){}
         bridgeSync();
+        pullFcmToken();
         enterApp();
       }).catch(function(){ btn.disabled=false; btn.textContent="Chat shuru karo"; formErr("profileError","Profile save nahi hui — internet check karke dobara koshish karo."); });
     });
     function doLogout(){
+      clearFcmToken();
       bridgeClear();
       setPresence(false);
       if(heartbeat) clearInterval(heartbeat);
