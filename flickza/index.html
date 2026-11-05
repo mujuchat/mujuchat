@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Flickza — Photo to Video Maker</title>
+<meta name="description" content="Turn your photos into scroll-stopping videos. Free, private, made entirely on your device.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0b0b10; color: #f4f4f8;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 28px 16px 56px; }
+
+  /* ---------- Hero ---------- */
+  .hero { text-align: center; padding: 18px 4px 6px; }
+  .logo {
+    font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 44px;
+    letter-spacing: -0.5px; line-height: 1.1; margin: 0;
+  }
+  .logo .play {
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .logo .name {
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline { font-size: 19px; font-weight: 500; color: #e9e9f2; margin: 12px 0 4px; }
+  .subtag { font-size: 14px; color: #a7a7b8; margin: 0 0 22px; }
+  .privacy {
+    margin-top: 16px; font-size: 13px; color: #9d9dab;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: block; width: 100%; border: 0; cursor: pointer;
+    font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 17px;
+    padding: 16px 20px; border-radius: 999px; color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35);
+    transition: transform .08s ease, opacity .15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .btn.secondary {
+    background: #1d1d28; border: 1px solid #2c2c3a; box-shadow: none; font-size: 15px; padding: 13px 16px;
+  }
+  .btn.small { font-size: 15px; padding: 13px 16px; }
+  .row { display: flex; gap: 10px; }
+  .row .btn { flex: 1; }
+
+  /* ---------- Cards & steps ---------- */
+  .card {
+    background: #14141d; border: 1px solid #23232f; border-radius: 20px;
+    padding: 18px; margin-top: 18px;
+  }
+  .step-title {
+    font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 17px;
+    display: flex; align-items: center; gap: 10px; margin: 0 0 6px;
+  }
+  .chip {
+    width: 26px; height: 26px; border-radius: 50%; flex: 0 0 26px;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #fff;
+  }
+  .hint { color: #a7a7b8; font-size: 13px; margin: 4px 0 0; }
+  .lbl { font-size: 13px; color: #a7a7b8; display: block; margin: 14px 0 6px; }
+  input[type="text"] {
+    width: 100%; background: #0e0e14; border: 1px solid #2a2a38; border-radius: 12px;
+    padding: 13px 14px; color: #fff; font-family: 'Poppins', sans-serif; font-size: 15px;
+    outline: none;
+  }
+  input[type="text"]:focus { border-color: #7c3aed; }
+
+  /* ---------- Photos ---------- */
+  .thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .thumb { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #0e0e14; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .thumb button {
+    position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%;
+    border: 0; background: rgba(0,0,0,0.7); color: #fff; font-size: 14px; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .count { font-size: 13px; color: #a7a7b8; margin-top: 10px; }
+
+  /* ---------- Templates ---------- */
+  .tpl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .tpl {
+    border: 2px solid #262633; border-radius: 16px; padding: 10px;
+    background: #101018; cursor: pointer; text-align: left; color: #f4f4f8;
+    font-family: 'Poppins', sans-serif;
+  }
+  .tpl.sel { border-color: #ec4899; box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.22); }
+  .tpl .pv { height: 76px; border-radius: 10px; }
+  .tpl .nm { font-weight: 600; margin-top: 9px; font-size: 15px; }
+  .tpl .ds { font-size: 12px; color: #a7a7b8; margin-top: 2px; line-height: 1.35; }
+
+  /* ---------- Preview ---------- */
+  .canvas-box { border-radius: 20px; overflow: hidden; border: 1px solid #262633; background: #000; margin-top: 12px; }
+  canvas { width: 100%; height: auto; display: block; }
+  .preview-bar { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+  .preview-bar .btn { width: auto; padding: 11px 22px; font-size: 15px; }
+  .dur { font-size: 13px; color: #a7a7b8; }
+
+  /* ---------- Create / progress ---------- */
+  .check { display: flex; gap: 10px; align-items: center; font-size: 15px; margin: 4px 0 14px; cursor: pointer; }
+  .check input { width: 21px; height: 21px; accent-color: #ec4899; flex: 0 0 21px; }
+  .progress-track { height: 10px; background: #1d1d28; border-radius: 99px; overflow: hidden; margin-top: 12px; }
+  .progress-fill {
+    height: 100%; width: 0%; border-radius: 99px;
+    background: linear-gradient(90deg, #7c3aed, #ec4899); transition: width .2s ease;
+  }
+  .phase { font-size: 13px; color: #c9c9d6; margin-top: 10px; min-height: 18px; }
+  .err {
+    background: #2a1218; border: 1px solid #7f1d2d; color: #fecdd3;
+    padding: 12px 14px; border-radius: 12px; font-size: 14px; margin-top: 12px; line-height: 1.45;
+  }
+
+  /* ---------- Result ---------- */
+  video { width: 100%; border-radius: 16px; background: #000; display: block; }
+  .footer { text-align: center; color: #6d6d7d; font-size: 12px; margin-top: 30px; line-height: 1.6; }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= HERO ================= -->
+  <header class="hero">
+    <h1 class="logo"><span class="play">▶</span> <span class="name">Flickza</span></h1>
+    <p class="tagline">Turn your photos into scroll-stopping videos.</p>
+    <p class="subtag">Pick photos, choose a style, get a video — in under a minute.</p>
+    <button class="btn" id="heroCreate" type="button">Create Video</button>
+    <p class="privacy">🔒 Your photos never leave your device — everything is made right on your phone.</p>
+  </header>
+
+  <!-- ================= STEP 1 · PHOTOS ================= -->
+  <section class="card" id="step1">
+    <h2 class="step-title"><span class="chip">1</span> Add your photos</h2>
+    <p class="hint">Choose 1 to 6 photos. Vertical photos look best.</p>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    <button class="btn secondary" id="addBtn" type="button" style="margin-top:12px;">＋ Add photos</button>
+    <div class="thumbs" id="thumbs"></div>
+    <p class="count" id="photoCount">0 / 6 photos</p>
+  </section>
+
+  <!-- ================= STEP 2 · TEMPLATE ================= -->
+  <section class="card" id="step2">
+    <h2 class="step-title"><span class="chip">2</span> Choose a template</h2>
+    <div class="tpl-grid" id="tplGrid">
+      <button class="tpl sel" type="button" data-tpl="birthday">
+        <div class="pv" style="background:linear-gradient(135deg,#f59e0b,#ec4899);"></div>
+        <div class="nm">🎉 Birthday Bash</div>
+        <div class="ds">Gold &amp; pink, falling confetti</div>
+      </button>
+      <button class="tpl" type="button" data-tpl="love">
+        <div class="pv" style="background:linear-gradient(135deg,#e11d48,#fb7185);"></div>
+        <div class="nm">❤️ Love Story</div>
+        <div class="ds">Soft rose glow, floating hearts</div>
+      </button>
+      <button class="tpl" type="button" data-tpl="travel">
+        <div class="pv" style="background:linear-gradient(135deg,#0d9488,#f97316);"></div>
+        <div class="nm">🌍 Travel Vibes</div>
+        <div class="ds">Teal &amp; orange, slow cinematic pan</div>
+      </button>
+      <button class="tpl" type="button" data-tpl="motivation">
+        <div class="pv" style="background:linear-gradient(135deg,#0f172a,#b45309);"></div>
+        <div class="nm">🔥 Daily Motivation</div>
+        <div class="ds">Dark &amp; gold, rising sparks</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= STEP 3 · TEXT ================= -->
+  <section class="card" id="step3">
+    <h2 class="step-title"><span class="chip">3</span> Your text</h2>
+    <label class="lbl" for="titleInput">Title</label>
+    <input type="text" id="titleInput" maxlength="40" value="Happy Birthday" autocomplete="off">
+    <label class="lbl" for="subInput">Subtitle</label>
+    <input type="text" id="subInput" maxlength="60" value="Wishing you an amazing year" autocomplete="off">
+  </section>
+
+  <!-- ================= STEP 4 · PREVIEW ================= -->
+  <section class="card" id="step4">
+    <h2 class="step-title"><span class="chip">4</span> Preview</h2>
+    <div class="canvas-box">
+      <canvas id="stage" width="720" height="1280"></canvas>
+    </div>
+    <div class="preview-bar">
+      <button class="btn" id="playBtn" type="button">⏸ Pause</button>
+      <span class="dur" id="durLabel">0:06 video</span>
+    </div>
+  </section>
+
+  <!-- ================= STEP 5 · CREATE ================= -->
+  <section class="card" id="step5">
+    <h2 class="step-title"><span class="chip">5</span> Create your video</h2>
+    <label class="check">
+      <input type="checkbox" id="musicCheck" checked>
+      <span>Add original music <span style="color:#a7a7b8; font-size:13px;">(made by Flickza, copyright-free)</span></span>
+    </label>
+    <button class="btn" id="createBtn" type="button">🎬 Create Video</button>
+    <div id="progressWrap" hidden>
+      <div class="progress-track"><div class="progress-fill" id="barFill"></div></div>
+      <p class="phase" id="phaseLabel">Starting…</p>
+    </div>
+    <div class="err" id="errBox" hidden></div>
+    <button class="btn secondary" id="fallbackBtn" type="button" hidden style="margin-top:12px;">⚡ Quick export instead (WebM)</button>
+    <p class="hint" id="createHint">Rendering happens on your device — a 15-second video can take a couple of minutes on slower phones. Keep this tab open.</p>
+  </section>
+
+  <!-- ================= RESULT ================= -->
+  <section class="card" id="resultCard" hidden>
+    <h2 class="step-title"><span class="chip">✓</span> Your video is ready</h2>
+    <video id="resultVideo" controls playsinline style="margin-top:12px;"></video>
+    <div class="row" style="margin-top:14px;">
+      <button class="btn small" id="downloadBtn" type="button">⬇ Download</button>
+      <button class="btn small secondary" id="shareBtn" type="button">Share</button>
+    </div>
+    <button class="btn secondary" id="againBtn" type="button" style="margin-top:10px;">↺ Create another</button>
+  </section>
+
+  <p class="footer">Flickza demo · Videos are rendered 100% on your device.<br>No uploads · No sign-up · No tracking</p>
+</div>
+
+<script type="module">
+/* ============================================================
+   Flickza — photo to video maker (100% on-device, no server)
+   ============================================================ */
+const W = 720, H = 1280, FPS = 24, FADE = 0.6;
+
+const $ = (id) => document.getElementById(id);
+const ui = {
+  fileInput: $('fileInput'), addBtn: $('addBtn'), thumbs: $('thumbs'),
+  photoCount: $('photoCount'), tplGrid: $('tplGrid'),
+  titleInput: $('titleInput'), subInput: $('subInput'),
+  canvas: $('stage'), playBtn: $('playBtn'), durLabel: $('durLabel'),
+  musicCheck: $('musicCheck'), createBtn: $('createBtn'),
+  progressWrap: $('progressWrap'), barFill: $('barFill'), phaseLabel: $('phaseLabel'),
+  errBox: $('errBox'), fallbackBtn: $('fallbackBtn'), createHint: $('createHint'),
+  resultCard: $('resultCard'), resultVideo: $('resultVideo'),
+  downloadBtn: $('downloadBtn'), shareBtn: $('shareBtn'), againBtn: $('againBtn'),
+  heroCreate: $('heroCreate'),
+};
+const ctx = ui.canvas.getContext('2d');
+
+/* ---------------- Templates ---------------- */
+const TEMPLATES = {
+  birthday: {
+    label: 'Birthday Bash',
+    title: 'Happy Birthday', sub: 'Wishing you an amazing year',
+    kb: 'in', particles: 'confetti', seed: 1234567,
+    bg: ['#2b1a05', '#170610'],
+    tint: ['rgba(245,158,11,0.15)', 'rgba(236,72,153,0.20)'],
+  },
+  love: {
+    label: 'Love Story',
+    title: 'Love You', sub: 'Every moment with you',
+    kb: 'in', particles: 'hearts', seed: 987654,
+    bg: ['#2b0714', '#150309'],
+    tint: ['rgba(225,29,72,0.16)', 'rgba(159,18,57,0.22)'],
+  },
+  travel: {
+    label: 'Travel Vibes',
+    title: 'Wanderlust', sub: 'Adventure awaits',
+    kb: 'pan', particles: 'sweep', seed: 24680,
+    bg: ['#04211d', '#170b02'],
+    tint: ['rgba(13,148,136,0.14)', 'rgba(249,115,22,0.16)'],
+  },
+  motivation: {
+    label: 'Daily Motivation',
+    title: 'Never Give Up', sub: 'Your story is not over',
+    kb: 'in', particles: 'sparks', seed: 1357911,
+    bg: ['#050a18', '#0a0601'],
+    tint: ['rgba(2,6,23,0.34)', 'rgba(180,83,9,0.16)'],
+  },
+};
+
+/* ---------------- Deterministic RNG + particle fields ----------------
+   Particle parameters are precomputed from a fixed seed per template.
+   Positions are always a pure function of time t — never accumulated —
+   so the live preview and the offline render draw identical frames. */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function buildParticles(kind, seed) {
+  const rnd = mulberry32(seed);
+  const arr = [];
+  if (kind === 'confetti') {
+    const cols = ['#ffd166', '#ef476f', '#f78c6b', '#ec4899', '#ffffff', '#a78bfa'];
+    for (let i = 0; i < 90; i++) arr.push({
+      x: rnd() * W, y: rnd() * (H + 160), s: 7 + rnd() * 9,
+      v: 90 + rnd() * 150, sway: 14 + rnd() * 30, ph: rnd() * Math.PI * 2,
+      rot: (rnd() - 0.5) * 2.4, c: cols[i % cols.length],
+    });
+  } else if (kind === 'hearts') {
+    for (let i = 0; i < 26; i++) arr.push({
+      x: rnd() * W, y: rnd() * (H + 200), s: 11 + rnd() * 20,
+      v: 42 + rnd() * 66, sway: 10 + rnd() * 22, ph: rnd() * Math.PI * 2,
+      a: 0.35 + rnd() * 0.45,
+    });
+  } else if (kind === 'sparks') {
+    for (let i = 0; i < 64; i++) arr.push({
+      x: rnd() * W, y: rnd() * (H + 120), s: 1.6 + rnd() * 3.2,
+      v: 55 + rnd() * 110, sway: 6 + rnd() * 14, ph: rnd() * Math.PI * 2,
+      tw: 1.5 + rnd() * 3.5,
+    });
+  }
+  return arr;
+}
+for (const key of Object.keys(TEMPLATES)) {
+  TEMPLATES[key].field = buildParticles(TEMPLATES[key].particles, TEMPLATES[key].seed);
+}
+
+/* ---------------- State ---------------- */
+const state = {
+  photos: [],            // { src: HTMLCanvasElement, w, h, url }
+  template: 'birthday',
+  textEdited: false,
+  playing: true,
+  playStart: 0,          // performance.now() anchor for preview clock
+  rendering: false,
+  resultBlob: null,
+  resultUrl: null,
+  resultExt: 'mp4',
+};
+let frozenText = null;   // {title, sub} captured when a render starts
+
+function tpl() { return TEMPLATES[state.template]; }
+function totalDuration() {
+  const n = state.photos.length;
+  if (!n) return 6;
+  return Math.min(15, Math.max(6, n * 3));
+}
+function currentText() {
+  if (frozenText) return frozenText;
+  return { title: ui.titleInput.value.trim(), sub: ui.subInput.value.trim() };
+}
+
+/* ============================================================
+   Drawing — drawFrame(t) is a pure function of time.
+   ============================================================ */
+function kbAt(mode, p) {
+  if (mode === 'pan') return { scale: 1.18, panX: (-0.032 + 0.064 * p) * W };
+  return { scale: 1.0 + 0.12 * p, panX: 0 }; // zoom-in 1.0 -> 1.12
+}
+
+function drawCover(c, src, sw, sh, scale, panX, alpha) {
+  const base = Math.max(W / sw, H / sh);
+  const s = base * scale;
+  const dw = sw * s, dh = sh * s;
+  c.globalAlpha = alpha;
+  c.drawImage(src, (W - dw) / 2 + panX, (H - dh) / 2, dw, dh);
+  c.globalAlpha = 1;
+}
+
+function heartPath(c, x, y, s) {
+  c.beginPath();
+  c.moveTo(x, y + s * 0.92);
+  c.bezierCurveTo(x - s * 1.15, y + s * 0.28, x - s * 0.72, y - s * 0.72, x, y - s * 0.12);
+  c.bezierCurveTo(x + s * 0.72, y - s * 0.72, x + s * 1.15, y + s * 0.28, x, y + s * 0.92);
+  c.closePath();
+}
+
+function drawParticles(c, T, t) {
+  const f = T.field;
+  if (T.particles === 'confetti') {
+    for (const p of f) {
+      const y = ((p.y + t * p.v) % (H + 160)) - 80;
+      const x = p.x + Math.sin(t * 1.4 + p.ph) * p.sway;
+      c.save();
+      c.translate(x, y);
+      c.rotate(p.rot * t + p.ph);
+      c.globalAlpha = 0.92;
+      c.fillStyle = p.c;
+      c.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+      c.restore();
+    }
+  } else if (T.particles === 'hearts') {
+    for (const p of f) {
+      const y = H + 60 - ((p.y + t * p.v) % (H + 200));
+      const x = p.x + Math.sin(t * 0.9 + p.ph) * p.sway;
+      c.globalAlpha = p.a * (0.75 + 0.25 * Math.sin(t * 1.7 + p.ph));
+      c.fillStyle = '#ff5d8f';
+      heartPath(c, x, y, p.s);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+  } else if (T.particles === 'sparks') {
+    for (const p of f) {
+      const y = H + 40 - ((p.y + t * p.v) % (H + 120));
+      const x = p.x + Math.sin(t * 0.8 + p.ph) * p.sway;
+      const tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * p.tw + p.ph));
+      c.globalAlpha = 0.28 * tw;
+      c.fillStyle = '#ffd166';
+      c.beginPath(); c.arc(x, y, p.s * 2.6, 0, Math.PI * 2); c.fill();
+      c.globalAlpha = 0.95 * tw;
+      c.beginPath(); c.arc(x, y, p.s, 0, Math.PI * 2); c.fill();
+    }
+    c.globalAlpha = 1;
+  } else if (T.particles === 'sweep') {
+    // slow diagonal light sweep
+    const bx = (((t * 0.16) % 1.8) - 0.4) * W;
+    const g = c.createLinearGradient(bx - 190, 0, bx + 190, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.5, 'rgba(255,255,255,0.10)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.save();
+    c.translate(bx, H / 2);
+    c.rotate(0.32);
+    c.fillStyle = g;
+    c.fillRect(-260, -H, 520, H * 2);
+    c.restore();
+  }
+}
+
+function fitFont(c, text, weight, startPx, family, maxWidth) {
+  let px = startPx;
+  c.font = weight + ' ' + px + 'px ' + family;
+  while (px > 18 && c.measureText(text).width > maxWidth) {
+    px -= 2;
+    c.font = weight + ' ' + px + 'px ' + family;
+  }
+  return px;
+}
+
+function drawTextAndBrand(c, T, t) {
+  // legibility gradient over the bottom third
+  const g = c.createLinearGradient(0, H * 0.52, 0, H);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.58)');
+  c.fillStyle = g;
+  c.fillRect(0, H * 0.52, W, H * 0.48);
+
+  const { title, sub } = currentText();
+  const a = Math.min(1, t / 0.6);                    // fade/rise-in over first 0.6s
+  const ease = 1 - Math.pow(1 - a, 3);
+  const rise = (1 - ease) * 34;
+  c.textAlign = 'center';
+  c.shadowColor = 'rgba(0,0,0,0.45)';
+  c.shadowBlur = 14;
+  c.shadowOffsetY = 3;
+
+  let titlePx = 0;
+  if (title) {
+    titlePx = fitFont(c, title, '800', 66, "'Montserrat', sans-serif", W - 72);
+    c.globalAlpha = ease;
+    c.fillStyle = '#ffffff';
+    c.fillText(title, W / 2, H * 0.80 + rise);
+  }
+  if (sub) {
+    const subPx = fitFont(c, sub, '500', 33, "'Poppins', sans-serif", W - 72);
+    c.font = '500 ' + subPx + 'px ' + "'Poppins', sans-serif";
+    c.globalAlpha = ease * 0.94;
+    c.fillStyle = '#f3e9ff';
+    c.fillText(sub, W / 2, H * 0.80 + (titlePx ? titlePx * 0.92 : 0) + 30 + rise);
+  }
+  c.globalAlpha = 1;
+  c.shadowColor = 'transparent';
+  c.shadowBlur = 0;
+  c.shadowOffsetY = 0;
+
+  // watermark — drawn on every frame, bottom-right
+  c.textAlign = 'left';
+  c.font = "600 25px 'Montserrat', sans-serif";
+  const label = 'Flickza';
+  const tw = c.measureText(label).width;
+  const wy = H - 26;
+  const triX = W - 26 - tw - 24;
+  c.globalAlpha = 0.65;
+  c.fillStyle = '#ffffff';
+  c.beginPath();
+  c.moveTo(triX, wy - 19);
+  c.lineTo(triX, wy - 1);
+  c.lineTo(triX + 15, wy - 10);
+  c.closePath();
+  c.fill();
+  c.fillText(label, triX + 22, wy);
+  c.globalAlpha = 1;
+}
+
+function drawFrame(t) {
+  const c = ctx;
+  const T = tpl();
+  const n = state.photos.length;
+
+  if (!n) {
+    const g = c.createLinearGradient(0, 0, W * 0.3, H);
+    g.addColorStop(0, T.bg[0]);
+    g.addColorStop(1, T.bg[1]);
+    c.fillStyle = g;
+    c.fillRect(0, 0, W, H);
+    drawParticles(c, T, t);
+    c.textAlign = 'center';
+    c.globalAlpha = 0.85;
+    c.fillStyle = '#ffffff';
+    c.font = "600 30px 'Poppins', sans-serif";
+    c.fillText('Add photos to see your video', W / 2, H * 0.47);
+    c.globalAlpha = 1;
+    drawTextAndBrand(c, T, t);
+    return;
+  }
+
+  const dur = totalDuration();
+  const tt = ((t % dur) + dur) % dur;
+  const seg = dur / n;
+  const i = Math.min(n - 1, Math.floor(tt / seg));
+  const lt = tt - i * seg;
+  const p = Math.min(1, lt / seg);
+
+  const cur = state.photos[i];
+  const kb = kbAt(T.kb, p);
+  drawCover(c, cur.src, cur.w, cur.h, kb.scale, kb.panX, 1);
+
+  // crossfade into the next photo during the last FADE seconds of a segment
+  if (i < n - 1 && lt > seg - FADE) {
+    const nxt = state.photos[i + 1];
+    const kbN = kbAt(T.kb, 0);
+    drawCover(c, nxt.src, nxt.w, nxt.h, kbN.scale, kbN.panX, (lt - (seg - FADE)) / FADE);
+  }
+
+  // template tint
+  const tg = c.createLinearGradient(0, 0, 0, H);
+  tg.addColorStop(0, T.tint[0]);
+  tg.addColorStop(1, T.tint[1]);
+  c.fillStyle = tg;
+  c.fillRect(0, 0, W, H);
+
+  // love vignette
+  if (T.particles === 'hearts') {
+    const vg = c.createRadialGradient(W / 2, H / 2, H * 0.28, W / 2, H / 2, H * 0.72);
+    vg.addColorStop(0, 'rgba(60,0,18,0)');
+    vg.addColorStop(1, 'rgba(60,0,18,0.42)');
+    c.fillStyle = vg;
+    c.fillRect(0, 0, W, H);
+  }
+
+  drawParticles(c, T, t);
+  drawTextAndBrand(c, T, t);
+}
+
+/* ============================================================
+   Photos
+   ============================================================ */
+function loadPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      // downscale very large photos (cap 1440px on the long edge)
+      const scale = Math.min(1, 1440 / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve({ src: c, w, h, url });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load')); };
+    img.src = url;
+  });
+}
+
+function refreshThumbs() {
+  ui.thumbs.innerHTML = '';
+  state.photos.forEach((ph, idx) => {
+    const d = document.createElement('div');
+    d.className = 'thumb';
+    const im = document.createElement('img');
+    im.src = ph.url;
+    im.alt = 'Photo ' + (idx + 1);
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = '✕';
+    b.setAttribute('aria-label', 'Remove photo ' + (idx + 1));
+    b.addEventListener('click', () => removePhoto(idx));
+    d.appendChild(im);
+    d.appendChild(b);
+    ui.thumbs.appendChild(d);
+  });
+  ui.photoCount.textContent = state.photos.length + ' / 6 photos';
+  const d = totalDuration();
+  ui.durLabel.textContent = '0:' + String(d).padStart(2, '0') + ' video';
+  restartPreviewClock();
+}
+
+function removePhoto(idx) {
+  const [gone] = state.photos.splice(idx, 1);
+  if (gone) URL.revokeObjectURL(gone.url);
+  refreshThumbs();
+}
+
+ui.addBtn.addEventListener('click', () => ui.fileInput.click());
+ui.heroCreate.addEventListener('click', () => {
+  $('step1').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => ui.fileInput.click(), 350);
+});
+
+ui.fileInput.addEventListener('change', async () => {
+  const files = Array.from(ui.fileInput.files || []);
+  ui.fileInput.value = '';
+  for (const f of files) {
+    if (state.photos.length >= 6) break;
+    if (!f.type || f.type.indexOf('image/') !== 0) continue;
+    try {
+      state.photos.push(await loadPhoto(f));
+    } catch (e) { /* skip unreadable file */ }
+  }
+  refreshThumbs();
+});
+
+/* ============================================================
+   Templates + text
+   ============================================================ */
+ui.tplGrid.addEventListener('click', (ev) => {
+  const btn = ev.target.closest('[data-tpl]');
+  if (!btn) return;
+  state.template = btn.getAttribute('data-tpl');
+  for (const el of ui.tplGrid.querySelectorAll('.tpl')) {
+    el.classList.toggle('sel', el.getAttribute('data-tpl') === state.template);
+  }
+  if (!state.textEdited) {
+    ui.titleInput.value = tpl().title;
+    ui.subInput.value = tpl().sub;
+  }
+});
+for (const inp of [ui.titleInput, ui.subInput]) {
+  inp.addEventListener('input', () => { state.textEdited = true; });
+}
+
+/* ============================================================
+   Preview (requestAnimationFrame, same drawFrame as the render)
+   ============================================================ */
+let rafId = null;
+function previewTick(now) {
+  if (!state.playing || state.rendering) { rafId = null; return; }
+  const t = (now - state.playStart) / 1000;
+  drawFrame(t);
+  rafId = requestAnimationFrame(previewTick);
+}
+function startPreview() {
+  if (rafId !== null) return;
+  state.playStart = performance.now();
+  rafId = requestAnimationFrame(previewTick);
+}
+function restartPreviewClock() {
+  state.playStart = performance.now();
+  if (state.playing && !state.rendering && rafId === null) startPreview();
+}
+ui.playBtn.addEventListener('click', () => {
+  state.playing = !state.playing;
+  ui.playBtn.textContent = state.playing ? '⏸ Pause' : '▶ Play';
+  if (state.playing) startPreview();
+});
+drawFrame(0);
+startPreview();
+
+/* ============================================================
+   Original music — fully synthesised at runtime (no audio files)
+   Soft chord pad: Am – F – C – G, plus a very gentle pulse.
+   ============================================================ */
+async function makeMusicBuffer(seconds) {
+  const sr = 44100;
+  const actx = new OfflineAudioContext(2, Math.ceil(sr * seconds), sr);
+  const master = actx.createGain();
+  master.gain.setValueAtTime(0, 0);
+  master.gain.linearRampToValueAtTime(0.5, 0.4);
+  master.gain.setValueAtTime(0.5, Math.max(0.4, seconds - 0.9));
+  master.gain.linearRampToValueAtTime(0, seconds);
+  const lp = actx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 1900;
+  master.connect(lp);
+  lp.connect(actx.destination);
+
+  // [root, third, fifth] per chord — Am, F, C, G
+  const CHORDS = [
+    [110.00, 261.63, 329.63],
+    [87.31, 220.00, 261.63],
+    [130.81, 329.63, 392.00],
+    [98.00, 246.94, 293.66],
+  ];
+  const chordDur = 2;
+  for (let start = 0, ci = 0; start < seconds; start += chordDur, ci++) {
+    const tones = CHORDS[ci % CHORDS.length];
+    const t0 = start;
+    const tEnd = Math.min(seconds, start + chordDur + 0.35);
+    for (const f of tones) {
+      const o = actx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.value = f;
+      const g = actx.createGain();
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.055, t0 + 0.5);
+      g.gain.setValueAtTime(0.055, Math.max(t0 + 0.5, tEnd - 0.35));
+      g.gain.linearRampToValueAtTime(0, tEnd);
+      o.connect(g); g.connect(master);
+      o.start(t0); o.stop(tEnd + 0.05);
+    }
+    // warm root, one octave below the triad root
+    const root = actx.createOscillator();
+    root.type = 'sine';
+    root.frequency.value = tones[0];
+    const rg = actx.createGain();
+    rg.gain.setValueAtTime(0, t0);
+    rg.gain.linearRampToValueAtTime(0.075, t0 + 0.4);
+    rg.gain.setValueAtTime(0.075, Math.max(t0 + 0.4, tEnd - 0.35));
+    rg.gain.linearRampToValueAtTime(0, tEnd);
+    root.connect(rg); rg.connect(master);
+    root.start(t0); root.stop(tEnd + 0.05);
+  }
+  // gentle pulse — soft pluck on each beat, cycling chord tones x2
+  for (let bt = 0, beat = 0; bt < seconds - 0.1; bt += 0.5, beat++) {
+    const tones = CHORDS[Math.floor(bt / chordDur) % CHORDS.length];
+    const f = tones[beat % tones.length] * 2;
+    const o = actx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.085, bt);
+    g.gain.exponentialRampToValueAtTime(0.001, bt + 0.28);
+    o.connect(g); g.connect(master);
+    o.start(bt); o.stop(bt + 0.3);
+  }
+  return actx.startRendering();
+}
+
+function bufferToWav(abuf) {
+  const sr = abuf.sampleRate;
+  const len = abuf.length;
+  const ch0 = abuf.getChannelData(0);
+  const ch1 = abuf.numberOfChannels > 1 ? abuf.getChannelData(1) : ch0;
+  const bytes = 44 + len * 2;
+  const buf = new ArrayBuffer(bytes);
+  const v = new DataView(buf);
+  const wstr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  wstr(0, 'RIFF'); v.setUint32(4, bytes - 8, true);
+  wstr(8, 'WAVE'); wstr(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  wstr(36, 'data'); v.setUint32(40, len * 2, true);
+  let o = 44;
+  for (let i = 0; i < len; i++) {
+    let s = (ch0[i] + ch1[i]) / 2;
+    s = Math.max(-1, Math.min(1, s));
+    v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    o += 2;
+  }
+  return new Uint8Array(buf);
+}
+
+/* ============================================================
+   Progress + error helpers
+   ============================================================ */
+function setProgress(pct, label) {
+  ui.progressWrap.hidden = false;
+  ui.barFill.style.width = Math.round(Math.max(0, Math.min(100, pct))) + '%';
+  if (label) ui.phaseLabel.textContent = label;
+}
+function showError(msg) {
+  ui.errBox.textContent = msg;
+  ui.errBox.hidden = false;
+}
+function clearError() {
+  ui.errBox.hidden = true;
+  ui.errBox.textContent = '';
+}
+function setRendering(on) {
+  state.rendering = on;
+  ui.createBtn.disabled = on;
+  ui.fallbackBtn.disabled = on;
+  if (on) {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  } else {
+    restartPreviewClock();
+  }
+}
+
+/* ============================================================
+   MP4 render — ffmpeg.wasm (single-threaded core, CDN modules)
+   ============================================================ */
+const FFMPEG_ESM = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
+const UTIL_ESM = 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js';
+const FFMPEG_BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm';
+const CORE_BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+
+let ffmpeg = null;
+async function loadFFmpeg() {
+  if (ffmpeg) return ffmpeg;
+  const { FFmpeg } = await import(FFMPEG_ESM);
+  const { toBlobURL } = await import(UTIL_ESM);
+  const ff = new FFmpeg();
+  ff.on('progress', ({ progress }) => {
+    if (state.rendering && isFinite(progress)) {
+      setProgress(68 + Math.min(1, Math.max(0, progress)) * 27, 'Encoding video…');
+    }
+  });
+  await ff.load({
+    classWorkerURL: await toBlobURL(FFMPEG_BASE + '/worker.js', 'text/javascript'),
+    coreURL: await toBlobURL(CORE_BASE + '/ffmpeg-core.js', 'text/javascript'),
+    wasmURL: await toBlobURL(CORE_BASE + '/ffmpeg-core.wasm', 'application/wasm'),
+  });
+  ffmpeg = ff;
+  return ff;
+}
+
+function canvasJpeg() {
+  return new Promise((resolve, reject) => {
+    ui.canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Frame capture failed'))), 'image/jpeg', 0.82);
+  });
+}
+
+async function renderMP4() {
+  const dur = totalDuration();
+  const totalFrames = Math.round(dur * FPS);
+  const written = [];
+  setProgress(4, 'Loading the video engine… (first time can take a moment)');
+  const ff = await loadFFmpeg();
+
+  let musicOk = false;
+  if (ui.musicCheck.checked) {
+    try {
+      setProgress(8, 'Composing original music…');
+      const abuf = await makeMusicBuffer(dur);
+      await ff.writeFile('music.wav', bufferToWav(abuf));
+      written.push('music.wav');
+      musicOk = true;
+    } catch (e) {
+      musicOk = false; // carry on without music rather than failing the video
+    }
+  }
+
+  await document.fonts.ready;
+  for (let f = 0; f < totalFrames; f++) {
+    drawFrame(f / FPS);
+    const blob = await canvasJpeg();
+    const name = 'frame' + String(f).padStart(4, '0') + '.jpg';
+    await ff.writeFile(name, new Uint8Array(await blob.arrayBuffer()));
+    written.push(name);
+    if (f % 6 === 0 || f === totalFrames - 1) {
+      setProgress(12 + (f / totalFrames) * 54,
+        'Drawing frames… ' + (f + 1) + ' / ' + totalFrames);
+    }
+  }
+
+  setProgress(68, 'Encoding video…');
+  const args = ['-framerate', String(FPS), '-i', 'frame%04d.jpg'];
+  if (musicOk) args.push('-i', 'music.wav');
+  args.push('-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags', '+faststart');
+  if (musicOk) args.push('-c:a', 'aac', '-shortest');
+  args.push('out.mp4');
+  const code = await ff.exec(args);
+  if (code !== 0) throw new Error('Video encoding failed (code ' + code + ')');
+
+  const data = await ff.readFile('out.mp4');
+  const blob = new Blob([data.buffer], { type: 'video/mp4' });
+
+  // free the ffmpeg filesystem
+  for (const name of written) { try { await ff.deleteFile(name); } catch (e) { /* ignore */ } }
+  try { await ff.deleteFile('out.mp4'); } catch (e) { /* ignore */ }
+
+  setProgress(100, 'Done!');
+  return blob;
+}
+
+/* ============================================================
+   Fallback — record the live preview to WebM (never dead-ends)
+   ============================================================ */
+function pickMime() {
+  const opts = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', ''];
+  for (const m of opts) {
+    if (!m) return '';
+    try { if (MediaRecorder.isTypeSupported(m)) return m; } catch (e) { /* ignore */ }
+  }
+  return '';
+}
+
+async function quickExport() {
+  const dur = totalDuration();
+  const stream = ui.canvas.captureStream(FPS);
+  let combined = stream;
+  if (ui.musicCheck.checked) {
+    try {
+      const abuf = await makeMusicBuffer(dur);
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ac = new AC();
+      const srcNode = ac.createBufferSource();
+      srcNode.buffer = abuf;
+      const dest = ac.createMediaStreamDestination();
+      srcNode.connect(dest);
+      combined = new MediaStream([
+        ...stream.getVideoTracks(),
+        ...dest.stream.getAudioTracks(),
+      ]);
+      srcNode.start();
+      setTimeout(() => { try { ac.close(); } catch (e) { /* ignore */ } }, (dur + 0.5) * 1000);
+    } catch (e) {
+      combined = stream; // video-only quick export
+    }
+  }
+  const mime = pickMime();
+  const rec = new MediaRecorder(combined, mime
+    ? { mimeType: mime, videoBitsPerSecond: 5000000 }
+    : { videoBitsPerSecond: 5000000 });
+  const chunks = [];
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise((r) => { rec.onstop = r; });
+
+  setProgress(20, 'Recording preview in real time… (' + dur + 's)');
+  state.playStart = performance.now();
+  const t0 = performance.now();
+  const tick = () => {
+    if (!state.rendering) return;
+    const t = (performance.now() - t0) / 1000;
+    drawFrame(t);
+    setProgress(20 + Math.min(1, t / dur) * 75, 'Recording preview in real time…');
+    if (t < dur) requestAnimationFrame(tick);
+  };
+  rec.start(250);
+  requestAnimationFrame(tick);
+  await stopped;
+  return new Blob(chunks, { type: mime || 'video/webm' });
+}
+
+/* ============================================================
+   Result handling
+   ============================================================ */
+function showResult(blob, ext) {
+  if (state.resultUrl) URL.revokeObjectURL(state.resultUrl);
+  state.resultBlob = blob;
+  state.resultExt = ext;
+  state.resultUrl = URL.createObjectURL(blob);
+  ui.resultVideo.src = state.resultUrl;
+  ui.downloadBtn.textContent = ext === 'mp4' ? '⬇ Download MP4' : '⬇ Download WebM';
+  ui.resultCard.hidden = false;
+  ui.resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function downloadResult() {
+  if (!state.resultBlob) return;
+  const a = document.createElement('a');
+  a.href = state.resultUrl;
+  a.download = 'flickza-video.' + state.resultExt;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+ui.downloadBtn.addEventListener('click', downloadResult);
+
+ui.shareBtn.addEventListener('click', async () => {
+  if (!state.resultBlob) return;
+  const file = new File([state.resultBlob], 'flickza-video.' + state.resultExt,
+    { type: state.resultBlob.type || (state.resultExt === 'mp4' ? 'video/mp4' : 'video/webm') });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'My Flickza video' });
+      return;
+    }
+    if (navigator.share) {
+      await navigator.share({ title: 'My Flickza video', text: 'Made with Flickza' });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return; // user closed the share sheet
+  }
+  downloadResult();
+});
+
+ui.againBtn.addEventListener('click', () => {
+  for (const ph of state.photos) URL.revokeObjectURL(ph.url);
+  state.photos = [];
+  state.textEdited = false;
+  state.template = 'birthday';
+  for (const el of ui.tplGrid.querySelectorAll('.tpl')) {
+    el.classList.toggle('sel', el.getAttribute('data-tpl') === 'birthday');
+  }
+  ui.titleInput.value = tpl().title;
+  ui.subInput.value = tpl().sub;
+  if (state.resultUrl) { URL.revokeObjectURL(state.resultUrl); state.resultUrl = null; }
+  state.resultBlob = null;
+  ui.resultVideo.removeAttribute('src');
+  ui.resultVideo.load();
+  ui.resultCard.hidden = true;
+  ui.progressWrap.hidden = true;
+  ui.fallbackBtn.hidden = true;
+  clearError();
+  refreshThumbs();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+/* ============================================================
+   Create flow
+   ============================================================ */
+ui.createBtn.addEventListener('click', async () => {
+  clearError();
+  ui.fallbackBtn.hidden = true;
+  if (!state.photos.length) {
+    showError('Please add at least one photo first (Step 1).');
+    $('step1').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  frozenText = { title: ui.titleInput.value.trim(), sub: ui.subInput.value.trim() };
+  setRendering(true);
+  setProgress(2, 'Starting…');
+  try {
+    const blob = await renderMP4();
+    showResult(blob, 'mp4');
+  } catch (err) {
+    console.error(err);
+    ui.progressWrap.hidden = true;
+    showError('The full-quality MP4 maker could not run on this device/browser. ' +
+      'No problem — use Quick export instead: it records the preview into a video file.');
+    ui.fallbackBtn.hidden = false;
+  } finally {
+    frozenText = null;
+    setRendering(false);
+  }
+});
+
+ui.fallbackBtn.addEventListener('click', async () => {
+  clearError();
+  if (!state.photos.length) {
+    showError('Please add at least one photo first (Step 1).');
+    $('step1').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  frozenText = { title: ui.titleInput.value.trim(), sub: ui.subInput.value.trim() };
+  setRendering(true);
+  setProgress(10, 'Preparing quick export…');
+  try {
+    await document.fonts.ready;
+    const blob = await quickExport();
+    setProgress(100, 'Done!');
+    showResult(blob, 'webm');
+    ui.fallbackBtn.hidden = true;
+  } catch (err) {
+    console.error(err);
+    ui.progressWrap.hidden = true;
+    showError('Quick export also failed on this browser. Try Chrome on Android, and keep at least one photo added.');
+  } finally {
+    frozenText = null;
+    setRendering(false);
+  }
+});
+</script>
+</body>
+</html>
