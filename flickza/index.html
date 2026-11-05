@@ -786,8 +786,12 @@ function clearError() {
 function setRendering(on) {
   state.rendering = on;
   ui.createBtn.disabled = on;
-  ui.quickBtn.disabled = on;
-  ui.fallbackBtn.disabled = on;
+  /* Quick export / fallback stay ENABLED while MP4 loads: they are the
+     escape hatch when the ~30 MB engine stalls on slow mobile data.
+     (Previously they were disabled here, so the user was trapped until
+     both CDN timeouts — up to 2 minutes — had elapsed.) */
+  ui.quickBtn.disabled = false;
+  ui.fallbackBtn.disabled = false;
   if (on) {
     if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
   } else {
@@ -819,6 +823,8 @@ const FFMPEG_CDNS = [
 const ENGINE_LOAD_TIMEOUT_MS = 60000;
 
 let ffmpeg = null;
+let mp4RunId = 0; // bumped to cancel an in-flight MP4 render (user switches to Quick export)
+let quickRunning = false;
 
 function withTimeout(promise, ms, what) {
   let timer = null;
@@ -849,18 +855,21 @@ async function loadFFmpegFrom(cdn) {
   return withTimeout(attempt, ENGINE_LOAD_TIMEOUT_MS, 'Video engine load (' + cdn.name + ')');
 }
 
-async function loadFFmpeg() {
+async function loadFFmpeg(runId) {
   if (ffmpeg) return ffmpeg;
   let lastErr = null;
   for (let i = 0; i < FFMPEG_CDNS.length; i++) {
+    if (runId !== mp4RunId) throw new Error('MP4 cancelled');
     const cdn = FFMPEG_CDNS[i];
     try {
       if (i > 0) {
         setProgress(4, 'The first engine download stalled — retrying from a mirror…');
       }
       ffmpeg = await loadFFmpegFrom(cdn);
+      if (runId !== mp4RunId) throw new Error('MP4 cancelled');
       return ffmpeg;
     } catch (err) {
+      if (err && err.message === 'MP4 cancelled') throw err;
       console.error('FFmpeg load failed from ' + cdn.name + ':', err);
       lastErr = err;
       ffmpeg = null; // never keep a half-loaded engine; the next attempt starts clean
@@ -875,12 +884,13 @@ function canvasJpeg() {
   });
 }
 
-async function renderMP4() {
+async function renderMP4(runId) {
   const dur = totalDuration();
   const totalFrames = Math.round(dur * FPS);
   const written = [];
   setProgress(4, ffmpeg ? 'Preparing…' : 'Downloading the video engine (one-time, ~30 MB)…');
-  const ff = await loadFFmpeg();
+  const ff = await loadFFmpeg(runId);
+  if (runId !== mp4RunId) return null; // user switched to Quick export
 
   let musicOk = false;
   if (ui.musicCheck.checked) {
@@ -897,6 +907,7 @@ async function renderMP4() {
 
   await document.fonts.ready;
   for (let f = 0; f < totalFrames; f++) {
+    if (runId !== mp4RunId) return null; // user switched to Quick export
     drawFrame(f / FPS);
     const blob = await canvasJpeg();
     const name = 'frame' + String(f).padStart(4, '0') + '.jpg';
@@ -915,6 +926,7 @@ async function renderMP4() {
   if (musicOk) args.push('-c:a', 'aac', '-shortest');
   args.push('out.mp4');
   const code = await ff.exec(args);
+  if (runId !== mp4RunId) return null; // user switched to Quick export
   if (code !== 0) throw new Error('Video encoding failed (code ' + code + ')');
 
   const data = await ff.readFile('out.mp4');
@@ -1064,31 +1076,37 @@ ui.createBtn.addEventListener('click', async () => {
     $('step1').scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+  const runId = ++mp4RunId;
   frozenText = { title: ui.titleInput.value.trim(), sub: ui.subInput.value.trim() };
   setRendering(true);
+  ui.fallbackBtn.hidden = false; // escape hatch visible while MP4 loads
   setProgress(2, 'Starting…');
   try {
-    const blob = await renderMP4();
-    showResult(blob, 'mp4');
+    const blob = await renderMP4(runId);
+    if (blob) showResult(blob, 'mp4');
   } catch (err) {
     console.error(err);
+    if (err && err.message === 'MP4 cancelled') return; // user switched to Quick export; that flow owns the UI now
     ui.progressWrap.hidden = true;
     showError('The full-quality MP4 maker could not run on this device/browser. ' +
       'No problem — use Quick export instead: it records the preview into a video file.');
     ui.fallbackBtn.hidden = false;
   } finally {
     frozenText = null;
-    setRendering(false);
+    if (runId === mp4RunId) setRendering(false); // don't reset the UI if Quick export took over
   }
 });
 
 async function runQuickExport() {
   clearError();
+  if (quickRunning) return; // a Quick export is already recording
   if (!state.photos.length) {
     showError('Please add at least one photo first (Step 1).');
     $('step1').scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
+  mp4RunId++; // cancel any MP4 render in flight so it can't overwrite this result
+  quickRunning = true;
   frozenText = { title: ui.titleInput.value.trim(), sub: ui.subInput.value.trim() };
   setRendering(true);
   setProgress(10, 'Preparing quick export…');
@@ -1105,6 +1123,7 @@ async function runQuickExport() {
   } finally {
     frozenText = null;
     setRendering(false);
+    quickRunning = false;
   }
 }
 ui.fallbackBtn.addEventListener('click', runQuickExport);
