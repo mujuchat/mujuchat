@@ -210,6 +210,8 @@
       <span>Add original music <span style="color:#a7a7b8; font-size:13px;">(made by Flickza, copyright-free)</span></span>
     </label>
     <button class="btn" id="createBtn" type="button">🎬 Create Video</button>
+    <button class="btn secondary" id="quickBtn" type="button" style="margin-top:10px;">⚡ Quick export (WebM)</button>
+    <p class="hint">Quick export skips the MP4 engine and records the preview directly — handy on slow connections.</p>
     <div id="progressWrap" hidden>
       <div class="progress-track"><div class="progress-fill" id="barFill"></div></div>
       <p class="phase" id="phaseLabel">Starting…</p>
@@ -245,7 +247,7 @@ const ui = {
   photoCount: $('photoCount'), tplGrid: $('tplGrid'),
   titleInput: $('titleInput'), subInput: $('subInput'),
   canvas: $('stage'), playBtn: $('playBtn'), durLabel: $('durLabel'),
-  musicCheck: $('musicCheck'), createBtn: $('createBtn'),
+  musicCheck: $('musicCheck'), createBtn: $('createBtn'), quickBtn: $('quickBtn'),
   progressWrap: $('progressWrap'), barFill: $('barFill'), phaseLabel: $('phaseLabel'),
   errBox: $('errBox'), fallbackBtn: $('fallbackBtn'), createHint: $('createHint'),
   resultCard: $('resultCard'), resultVideo: $('resultVideo'),
@@ -784,6 +786,7 @@ function clearError() {
 function setRendering(on) {
   state.rendering = on;
   ui.createBtn.disabled = on;
+  ui.quickBtn.disabled = on;
   ui.fallbackBtn.disabled = on;
   if (on) {
     if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
@@ -795,29 +798,75 @@ function setRendering(on) {
 /* ============================================================
    MP4 render — ffmpeg.wasm (single-threaded core, CDN modules)
    ============================================================ */
-const FFMPEG_ESM = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
-const UTIL_ESM = 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js';
-const FFMPEG_BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm';
-const CORE_BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
+/* Two CDN mirrors for the engine — jsDelivr first, unpkg as fallback.
+   Versions are identical on both mirrors. */
+const FFMPEG_CDNS = [
+  {
+    name: 'jsDelivr',
+    ffmpegEsm: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js',
+    utilEsm: 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js',
+    ffmpegBase: 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm',
+    coreBase: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm',
+  },
+  {
+    name: 'unpkg',
+    ffmpegEsm: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js',
+    utilEsm: 'https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js',
+    ffmpegBase: 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm',
+    coreBase: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm',
+  },
+];
+const ENGINE_LOAD_TIMEOUT_MS = 60000;
 
 let ffmpeg = null;
+
+function withTimeout(promise, ms, what) {
+  let timer = null;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(what + ' timed out after ' + Math.round(ms / 1000) + 's')), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => { clearTimeout(timer); });
+}
+
+async function loadFFmpegFrom(cdn) {
+  const attempt = (async () => {
+    const { FFmpeg } = await import(cdn.ffmpegEsm);
+    const { toBlobURL } = await import(cdn.utilEsm);
+    const ff = new FFmpeg();
+    ff.on('progress', ({ progress }) => {
+      if (state.rendering && isFinite(progress)) {
+        setProgress(68 + Math.min(1, Math.max(0, progress)) * 27, 'Encoding video…');
+      }
+    });
+    await ff.load({
+      classWorkerURL: await toBlobURL(cdn.ffmpegBase + '/worker.js', 'text/javascript'),
+      coreURL: await toBlobURL(cdn.coreBase + '/ffmpeg-core.js', 'text/javascript'),
+      wasmURL: await toBlobURL(cdn.coreBase + '/ffmpeg-core.wasm', 'application/wasm'),
+    });
+    return ff;
+  })();
+  return withTimeout(attempt, ENGINE_LOAD_TIMEOUT_MS, 'Video engine load (' + cdn.name + ')');
+}
+
 async function loadFFmpeg() {
   if (ffmpeg) return ffmpeg;
-  const { FFmpeg } = await import(FFMPEG_ESM);
-  const { toBlobURL } = await import(UTIL_ESM);
-  const ff = new FFmpeg();
-  ff.on('progress', ({ progress }) => {
-    if (state.rendering && isFinite(progress)) {
-      setProgress(68 + Math.min(1, Math.max(0, progress)) * 27, 'Encoding video…');
+  let lastErr = null;
+  for (let i = 0; i < FFMPEG_CDNS.length; i++) {
+    const cdn = FFMPEG_CDNS[i];
+    try {
+      if (i > 0) {
+        setProgress(4, 'The first engine download stalled — retrying from a mirror…');
+      }
+      ffmpeg = await loadFFmpegFrom(cdn);
+      return ffmpeg;
+    } catch (err) {
+      console.error('FFmpeg load failed from ' + cdn.name + ':', err);
+      lastErr = err;
+      ffmpeg = null; // never keep a half-loaded engine; the next attempt starts clean
     }
-  });
-  await ff.load({
-    classWorkerURL: await toBlobURL(FFMPEG_BASE + '/worker.js', 'text/javascript'),
-    coreURL: await toBlobURL(CORE_BASE + '/ffmpeg-core.js', 'text/javascript'),
-    wasmURL: await toBlobURL(CORE_BASE + '/ffmpeg-core.wasm', 'application/wasm'),
-  });
-  ffmpeg = ff;
-  return ff;
+  }
+  throw lastErr || new Error('Video engine could not be loaded');
 }
 
 function canvasJpeg() {
@@ -830,7 +879,7 @@ async function renderMP4() {
   const dur = totalDuration();
   const totalFrames = Math.round(dur * FPS);
   const written = [];
-  setProgress(4, 'Loading the video engine… (first time can take a moment)');
+  setProgress(4, ffmpeg ? 'Preparing…' : 'Downloading the video engine (one-time, ~30 MB)…');
   const ff = await loadFFmpeg();
 
   let musicOk = false;
@@ -1033,7 +1082,7 @@ ui.createBtn.addEventListener('click', async () => {
   }
 });
 
-ui.fallbackBtn.addEventListener('click', async () => {
+async function runQuickExport() {
   clearError();
   if (!state.photos.length) {
     showError('Please add at least one photo first (Step 1).');
@@ -1057,7 +1106,9 @@ ui.fallbackBtn.addEventListener('click', async () => {
     frozenText = null;
     setRendering(false);
   }
-});
+}
+ui.fallbackBtn.addEventListener('click', runQuickExport);
+ui.quickBtn.addEventListener('click', runQuickExport);
 </script>
 </body>
 </html>
